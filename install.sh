@@ -20,7 +20,7 @@ echo "🚀 Installing JeeraType for ${OS}/${ARCH}..."
 LATEST_TAG=$(curl -s https://api.github.com/repos/${REPO}/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 
 if [ -z "$LATEST_TAG" ]; then
-  LATEST_TAG="v1.0.0"
+  LATEST_TAG="v1.0.1"
 fi
 
 VERSION_NUM="${LATEST_TAG#v}"
@@ -43,7 +43,7 @@ fi
 
 tar -xzf "$TAR_FILE"
 
-# Find binary inside extracted directory (case insensitive search)
+# Find binary inside extracted directory
 FOUND_BIN=$(find . -maxdepth 2 -type f \( -name "jeeratype" -o -name "JeeraType" \) | head -n 1)
 
 if [ -z "$FOUND_BIN" ]; then
@@ -60,5 +60,40 @@ fi
 mv "$FOUND_BIN" "$INSTALL_DIR/$BINARY_NAME"
 chmod +x "$INSTALL_DIR/$BINARY_NAME"
 
+echo ""
 echo "✅ JeeraType installed successfully to ${INSTALL_DIR}/${BINARY_NAME}!"
-echo "Run 'jeeratype' in your terminal to start typing."
+
+# PATH check & automatic shell profile update
+case ":$PATH:" in
+  *":$INSTALL_DIR:"*)
+    echo "Run 'jeeratype' in your terminal to start typing!"
+    ;;
+  *)
+    ADDED_PROFILE=0
+    SHELL_PROFILE=""
+    if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zshrc" ]; then
+      SHELL_PROFILE="$HOME/.zshrc"
+    elif [ -f "$HOME/.bashrc" ]; then
+      SHELL_PROFILE="$HOME/.bashrc"
+    fi
+
+    if [ -n "$SHELL_PROFILE" ] && [ -w "$SHELL_PROFILE" ]; then
+      if ! grep -q "$INSTALL_DIR" "$SHELL_PROFILE"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_PROFILE"
+        ADDED_PROFILE=1
+      fi
+    fi
+
+    echo ""
+    echo "⚠️  Note: ${INSTALL_DIR} was not in your active PATH."
+    if [ $ADDED_PROFILE -eq 1 ]; then
+      echo "⚙️ Added ${INSTALL_DIR} to ${SHELL_PROFILE}."
+      echo "To start right now, run:"
+      echo "  ${INSTALL_DIR}/${BINARY_NAME}"
+      echo "Or restart your terminal / run 'source ${SHELL_PROFILE}' to use 'jeeratype'."
+    else
+      echo "To start right now, run:"
+      echo "  ${INSTALL_DIR}/${BINARY_NAME}"
+    fi
+    ;;
+esac
