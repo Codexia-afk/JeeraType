@@ -45,10 +45,10 @@ curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.s
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sh
 ```
 
-### 🪟 Windows (One-Line PowerShell Install)
-Open **PowerShell** and run:
-```powershell
-irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex
+### 🪟 Windows (Command Prompt / PowerShell / Windows Terminal)
+Open **Command Prompt** (`cmd.exe`) or **PowerShell** and run:
+```cmd
+powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex"
 ```
 
 ### ⚡ Go Install (Cross-Platform)
