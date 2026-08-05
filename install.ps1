@@ -4,15 +4,14 @@ $ErrorActionPreference = "Stop"
 $Repo = "Codexia-afk/JeeraType"
 $BinaryName = "jeeratype.exe"
 
-Write-Host "🚀 Installing JeeraType for Windows..." -ForegroundColor Amber -NoNewline
-Write-Host ""
+Write-Host "🚀 Installing JeeraType for Windows..." -ForegroundColor Cyan
 
 # Query latest version tag from GitHub API
 try {
     $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
     $Tag = $Release.tag_name
 } catch {
-    $Tag = "v1.0.0"
+    $Tag = "v1.0.2"
 }
 
 $CleanTag = $Tag.TrimStart("v")
@@ -57,4 +56,4 @@ Remove-Item $TempExtract -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "✅ JeeraType installed successfully!" -ForegroundColor Green
-Write-Host "Type 'jeeratype' in any PowerShell or Command Prompt to start!" -ForegroundColor White
+Write-Host "Type 'jeeratype' in any PowerShell or Command Prompt window to start!" -ForegroundColor White
