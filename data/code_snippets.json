@@ -1,0 +1,9 @@
+{
+  "code_snippets": [
+    "package main\n\nimport \"fmt\"\n\nfunc main() {\n    fmt.Println(\"Hello, JeeraType!\")\n}",
+    "fn main() {\n    let mut numbers = vec![1, 2, 3];\n    numbers.push(4);\n    println!(\"{:?}\", numbers);\n}",
+    "const calculateWPM = (correctChars, timeMinutes) => {\n  return (correctChars / 5) / timeMinutes;\n};",
+    "def quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quick_sort(left) + middle + quick_sort(right)",
+    "type Model struct {\n    wpm float64\n    accuracy float64\n}\n\nfunc (m Model) Init() tea.Cmd {\n    return nil\n}"
+  ]
+}

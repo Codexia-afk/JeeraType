@@ -1,0 +1,21 @@
+# Binaries
+jeeratype
+*.exe
+*.exe.manifest
+*.dll
+*.so
+*.dylib
+
+# Build & test caches
+.gopath/
+.gocache/
+*.test
+*.out
+
+# User data & config
+stats.db
+history.jsonl
+
+# OS files
+.DS_Store
+Thumbs.db
