@@ -42,13 +42,18 @@ if ($ExtractedExe) {
     exit 1
 }
 
-# Add to User PATH if not present
+# Add to User PATH in Windows Registry
 $UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($UserPath -notlike "*$InstallDir*") {
     Write-Host "⚙️ Adding JeeraType to User PATH..." -ForegroundColor Yellow
     [Environment]::SetEnvironmentVariable("Path", "$UserPath;$InstallDir", "User")
-    $env:Path += ";$InstallDir"
 }
+
+# Update current session PATH in memory
+$env:Path = "$InstallDir;$env:Path"
+
+# Create a temporary function in current session so 'jeeratype' works immediately in this window
+function global:jeeratype { & "$InstallDir\jeeratype.exe" $args }
 
 # Cleanup
 Remove-Item $TempZip -Force -ErrorAction SilentlyContinue
@@ -56,4 +61,4 @@ Remove-Item $TempExtract -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "✅ JeeraType installed successfully!" -ForegroundColor Green
-Write-Host "Type 'jeeratype' in any PowerShell or Command Prompt window to start!" -ForegroundColor White
+Write-Host "Type 'jeeratype' in your terminal to start!" -ForegroundColor White
