@@ -1,0 +1,9 @@
+{
+  "quotes": [
+    "Simplicity is prerequisite for reliability. Complex systems tend to fail in mysterious ways, while straightforward designs fail gracefully.",
+    "Premature optimization is the root of all evil in programming. Measure bottlenecks empirically before refactoring for performance.",
+    "Concurrency is about dealing with lots of things at once. Parallelism is about doing lots of things at once.",
+    "The UNIX philosophy emphasizes building modular software tools that do one thing extraordinarily well and compose together seamlessly.",
+    "The best code is no code at all. Every line of code added to a codebase is a line that must be tested, debugged, and maintained forever."
+  ]
+}

@@ -86,12 +86,26 @@ var (
 		GhostCursor: lipgloss.Color("#006622"),
 	}
 
+	ThemeGruvbox = Theme{
+		Name:        "gruvbox",
+		Primary:     lipgloss.Color("#FE8019"), // Orange
+		Secondary:   lipgloss.Color("#FABD2F"), // Yellow
+		Success:     lipgloss.Color("#B8BB26"), // Green
+		Error:       lipgloss.Color("#FB4934"), // Red
+		Dim:         lipgloss.Color("#665C54"), // Gray
+		Subtle:      lipgloss.Color("#EBDBB2"), // Light
+		Background:  lipgloss.Color("#282828"),
+		Highlight:   lipgloss.Color("#83A598"), // Blue
+		GhostCursor: lipgloss.Color("#504945"),
+	}
+
 	AvailableThemes = []Theme{
 		ThemeAmber,
 		ThemeCatppuccin,
 		ThemeNord,
 		ThemeDracula,
 		ThemeMatrix,
+		ThemeGruvbox,
 	}
 )
 

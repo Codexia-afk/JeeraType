@@ -70,6 +70,18 @@ func InitDB() error {
 		count INTEGER DEFAULT 0,
 		total_latency_ms INTEGER DEFAULT 0
 	);
+
+	CREATE TABLE IF NOT EXISTS file_offsets (
+		file_path TEXT PRIMARY KEY,
+		cursor_offset INTEGER DEFAULT 0,
+		updated_at DATETIME
+	);
+
+	CREATE TABLE IF NOT EXISTS pb_samples (
+		mode_key TEXT PRIMARY KEY,
+		wpm REAL DEFAULT 0,
+		samples_json TEXT
+	);
 	`
 
 	_, err = DB.Exec(schema)

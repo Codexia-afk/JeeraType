@@ -1,7 +1,8 @@
 package engine
 
 import (
-	"time"
+	"fmt"
+	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Codexia-afk/JeeraType/config"
@@ -20,6 +21,13 @@ type Model struct {
 	currentMode     ui.TestMode
 	currentTheme    config.Theme
 	ghostWPM        float64
+	showKeys        bool
+	stopOnError     bool
+	suddenDeath     bool
+	stdinText       string
+	filePath        string
+	fileOffset      int
+	lastPressedRune rune
 	tracker         *stats.Tracker
 	width           int
 	height          int
@@ -35,6 +43,9 @@ func NewModel() *Model {
 		currentMode:     ui.ModeParagraphs,
 		currentTheme:    config.ThemeAmber,
 		ghostWPM:        0,
+		showKeys:        false,
+		stopOnError:     false,
+		suddenDeath:     false,
 		width:           80,
 		height:          24,
 	}
@@ -44,8 +55,39 @@ func (m *Model) SetTheme(themeName string) {
 	m.currentTheme = config.GetThemeByName(themeName)
 }
 
+func (m *Model) SetCustomTheme(theme config.Theme) {
+	m.currentTheme = theme
+}
+
 func (m *Model) SetGhostWPM(wpm float64) {
 	m.ghostWPM = wpm
+}
+
+func (m *Model) SetShowKeys(show bool) {
+	m.showKeys = show
+}
+
+func (m *Model) SetStopOnError(soe bool) {
+	m.stopOnError = soe
+}
+
+func (m *Model) SetSuddenDeath(sd bool) {
+	m.suddenDeath = sd
+}
+
+func (m *Model) SetMode(mode ui.TestMode) {
+	m.currentMode = mode
+}
+
+func (m *Model) SetStdinText(text string) {
+	m.stdinText = text
+	m.currentMode = ui.ModeStdin
+}
+
+func (m *Model) SetFilePath(path string) {
+	m.filePath = path
+	m.currentMode = ui.ModeFile
+	m.fileOffset = db.GetFileOffset(path)
 }
 
 func (m *Model) SetState(st AppState) {
@@ -73,16 +115,48 @@ func (m *Model) StartTest() {
 		weakKeys := db.GetTopWeakKeys(5)
 		weakBigrams := db.GetTopSlowestBigrams(5)
 		targetText = generator.GenerateAdaptiveText(weakKeys, weakBigrams, duration)
+	case ui.ModeQuotes:
+		targetText = generator.GenerateQuoteText()
+	case ui.ModeStdin:
+		if m.stdinText != "" {
+			targetText = m.stdinText
+		} else {
+			targetText = generator.GenerateText(duration)
+		}
+	case ui.ModeFile:
+		if m.filePath != "" {
+			content, err := os.ReadFile(m.filePath)
+			if err == nil && len(content) > 0 {
+				fullText := string(content)
+				if m.fileOffset < len(fullText) {
+					targetText = fullText[m.fileOffset:]
+				} else {
+					targetText = fullText
+					m.fileOffset = 0
+				}
+			} else {
+				targetText = generator.GenerateText(duration)
+			}
+		} else {
+			targetText = generator.GenerateText(duration)
+		}
 	default:
 		targetText = generator.GenerateText(duration)
 	}
 
-	m.tracker = stats.NewTracker(targetText, duration, m.ghostWPM)
+	m.tracker = stats.NewTracker(targetText, duration, m.ghostWPM, m.stopOnError, m.suddenDeath)
+
+	// Fetch PB Ghost sample history from SQLite
+	modeKey := fmt.Sprintf("%s_%ds", m.currentMode.String(), duration)
+	pbWPM, pbSamples := db.GetPBRace(modeKey)
+	m.tracker.PBWPM = pbWPM
+	m.tracker.PBSamples = pbSamples
+
 	m.state = StateTest
 	m.historySaved = false
 }
 
-// FinishTest concludes test session and records metrics in JSONL and SQLite database.
+// FinishTest concludes test session.
 func (m *Model) FinishTest() {
 	if m.tracker == nil || m.tracker.IsFinished {
 		return
@@ -94,16 +168,17 @@ func (m *Model) FinishTest() {
 		m.historySaved = true
 
 		netWPM := m.tracker.CalculateWPM()
-		rawWPM := m.tracker.CalculateRawWPM()
+		grossWPM := m.tracker.CalculateGrossWPM()
 		acc := m.tracker.CalculateAccuracy()
 		consistency := m.tracker.CalculateConsistency()
+		duration := m.tracker.DurationSec
 
 		// Save JSONL record
 		rec := storage.HistoryRecord{
-			Timestamp:    time.Now(),
-			DurationSec:  m.tracker.DurationSec,
+			Timestamp:    m.tracker.EndTime,
+			DurationSec:  duration,
 			WPM:          netWPM,
-			RawWPM:       rawWPM,
+			RawWPM:       grossWPM,
 			Accuracy:     acc,
 			Consistency:  consistency,
 			TotalChars:   m.tracker.CursorIdx,
@@ -113,7 +188,18 @@ func (m *Model) FinishTest() {
 		_ = storage.SaveRecord(rec)
 
 		// Save SQLite run record
-		_ = db.SaveTestRun(m.currentMode.String(), netWPM, rawWPM, acc, consistency, m.tracker.DurationSec)
+		modeStr := m.currentMode.String()
+		_ = db.SaveTestRun(modeStr, netWPM, grossWPM, acc, consistency, duration)
+
+		// Save PB Race Keyframes
+		modeKey := fmt.Sprintf("%s_%ds", modeStr, duration)
+		_ = db.SavePBRace(modeKey, netWPM, m.tracker.WPMSamples)
+
+		// Save File Offset Progress
+		if m.currentMode == ui.ModeFile && m.filePath != "" {
+			newOffset := m.fileOffset + m.tracker.CursorIdx
+			_ = db.SaveFileOffset(m.filePath, newOffset)
+		}
 	}
 }
 
@@ -187,17 +273,17 @@ func (m *Model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "5":
 		m.selectedModeIdx = 4
 	case "m":
-		// Cycle typing mode
 		switch m.currentMode {
 		case ui.ModeParagraphs:
 			m.currentMode = ui.ModeCode
 		case ui.ModeCode:
 			m.currentMode = ui.ModeAdaptive
+		case ui.ModeAdaptive:
+			m.currentMode = ui.ModeQuotes
 		default:
 			m.currentMode = ui.ModeParagraphs
 		}
 	case "t":
-		// Cycle themes
 		themes := config.AvailableThemes
 		for i, th := range themes {
 			if th.Name == m.currentTheme.Name {
@@ -206,7 +292,6 @@ func (m *Model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case "g":
-		// Cycle ghost pacer speed
 		switch m.ghostWPM {
 		case 0:
 			m.ghostWPM = 60
@@ -219,6 +304,8 @@ func (m *Model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		default:
 			m.ghostWPM = 0
 		}
+	case "v":
+		m.showKeys = !m.showKeys
 	case "k":
 		m.state = StateHeatmap
 	case "enter", " ":
@@ -252,6 +339,7 @@ func (m *Model) updateTest(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	runes := msg.Runes
 	if len(runes) > 0 {
+		m.lastPressedRune = runes[0]
 		for _, r := range runes {
 			m.tracker.RecordRune(r)
 			if m.tracker.IsFinished {
@@ -260,6 +348,7 @@ func (m *Model) updateTest(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 		}
 	} else if msg.String() == "space" {
+		m.lastPressedRune = ' '
 		m.tracker.RecordRune(' ')
 		if m.tracker.IsFinished {
 			m.FinishTest()
@@ -291,13 +380,13 @@ func (m *Model) updateHeatmap(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// View renders the active screen state.
+// View renders active screen.
 func (m *Model) View() string {
 	switch m.state {
 	case StateMenu:
-		return ui.RenderMenuView(m.timeModes, m.selectedModeIdx, m.currentMode, m.currentTheme, m.ghostWPM, m.width)
+		return ui.RenderMenuView(m.timeModes, m.selectedModeIdx, m.currentMode, m.currentTheme, m.ghostWPM, m.showKeys, m.width)
 	case StateTest:
-		return ui.RenderTestView(m.tracker, m.currentTheme, m.width)
+		return ui.RenderTestView(m.tracker, m.currentTheme, m.showKeys, m.lastPressedRune, m.width)
 	case StateResults:
 		return ui.RenderResultsView(m.tracker, m.currentTheme, m.width)
 	case StateHeatmap:

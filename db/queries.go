@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 )
@@ -22,6 +23,76 @@ func SaveTestRun(mode string, wpm, rawWPM, accuracy, consistency float64, durati
 	          VALUES (?, ?, ?, ?, ?, ?, ?)`
 	_, err := DB.Exec(query, time.Now(), mode, wpm, rawWPM, accuracy, consistency, durationSec)
 	return err
+}
+
+// SaveFileOffset records or updates file reading cursor offset.
+func SaveFileOffset(filePath string, offset int) error {
+	if DB == nil || filePath == "" {
+		return nil
+	}
+	query := `
+	INSERT INTO file_offsets (file_path, cursor_offset, updated_at)
+	VALUES (?, ?, ?)
+	ON CONFLICT(file_path) DO UPDATE SET
+		cursor_offset = ?,
+		updated_at = ?;
+	`
+	now := time.Now()
+	_, err := DB.Exec(query, filePath, offset, now, offset, now)
+	return err
+}
+
+// GetFileOffset retrieves saved reading offset for a file.
+func GetFileOffset(filePath string) int {
+	if DB == nil || filePath == "" {
+		return 0
+	}
+	query := `SELECT cursor_offset FROM file_offsets WHERE file_path = ?`
+	var offset int
+	err := DB.QueryRow(query, filePath).Scan(&offset)
+	if err != nil {
+		return 0
+	}
+	return offset
+}
+
+// SavePBRace records personal best WPM and 1-second sample timeline.
+func SavePBRace(modeKey string, wpm float64, samples []float64) error {
+	if DB == nil || modeKey == "" {
+		return nil
+	}
+	data, err := json.Marshal(samples)
+	if err != nil {
+		return err
+	}
+
+	query := `
+	INSERT INTO pb_samples (mode_key, wpm, samples_json)
+	VALUES (?, ?, ?)
+	ON CONFLICT(mode_key) DO UPDATE SET
+		wpm = ?,
+		samples_json = ?
+	WHERE ? > wpm;
+	`
+	_, err = DB.Exec(query, modeKey, wpm, string(data), wpm, string(data), wpm)
+	return err
+}
+
+// GetPBRace retrieves personal best WPM and sample timeline.
+func GetPBRace(modeKey string) (float64, []float64) {
+	if DB == nil || modeKey == "" {
+		return 0, nil
+	}
+	query := `SELECT wpm, samples_json FROM pb_samples WHERE mode_key = ?`
+	var wpm float64
+	var jsonStr string
+	err := DB.QueryRow(query, modeKey).Scan(&wpm, &jsonStr)
+	if err != nil {
+		return 0, nil
+	}
+	var samples []float64
+	_ = json.Unmarshal([]byte(jsonStr), &samples)
+	return wpm, samples
 }
 
 // RecordKeyHit updates hits, errors, and latency for a single key.

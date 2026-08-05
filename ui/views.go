@@ -16,6 +16,9 @@ const (
 	ModeParagraphs TestMode = iota
 	ModeCode
 	ModeAdaptive
+	ModeQuotes
+	ModeStdin
+	ModeFile
 )
 
 func (m TestMode) String() string {
@@ -26,18 +29,25 @@ func (m TestMode) String() string {
 		return "Code Mode"
 	case ModeAdaptive:
 		return "Adaptive Weakness"
+	case ModeQuotes:
+		return "Quotes"
+	case ModeStdin:
+		return "STDIN Pipe"
+	case ModeFile:
+		return "File Reader"
 	default:
 		return "Paragraphs"
 	}
 }
 
-// RenderMenuView renders initial options: mode, duration, theme, ghost pacer, hotkeys.
+// RenderMenuView renders initial options.
 func RenderMenuView(
 	timeModes []int,
 	selectedModeIdx int,
 	currentMode TestMode,
 	currentTheme config.Theme,
 	ghostWPM float64,
+	showKeys bool,
 	termWidth int,
 ) string {
 	s := NewDynamicStyles(currentTheme)
@@ -51,7 +61,7 @@ func RenderMenuView(
 	b.WriteString(s.StyleSubtext.Render("Typing Mode:"))
 	b.WriteString("\n")
 	var modePills []string
-	modes := []TestMode{ModeParagraphs, ModeCode, ModeAdaptive}
+	modes := []TestMode{ModeParagraphs, ModeCode, ModeAdaptive, ModeQuotes}
 	for _, m := range modes {
 		label := m.String()
 		if m == currentMode {
@@ -78,20 +88,24 @@ func RenderMenuView(
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, pills...))
 	b.WriteString("\n\n")
 
-	// Ghost Pacer & Theme Status Line
+	// Status Line
 	ghostStr := "Disabled"
 	if ghostWPM > 0 {
 		ghostStr = fmt.Sprintf("%.0f WPM 👻", ghostWPM)
 	}
-	infoLine := fmt.Sprintf("Theme: [%s]    Ghost Pacer: [%s]", strings.ToUpper(currentTheme.Name), ghostStr)
+	keysStr := "OFF"
+	if showKeys {
+		keysStr = "ON"
+	}
+	infoLine := fmt.Sprintf("Theme: [%s]    Ghost Pacer: [%s]    Visual Overlay: [%s]", strings.ToUpper(currentTheme.Name), ghostStr, keysStr)
 	b.WriteString(s.StyleSubtext.Render(infoLine))
 	b.WriteString("\n\n")
 
 	// Controls Guide
 	helpText := "Controls:\n" +
-		"  [m] Toggle Mode (Paragraph / Code / Adaptive)    [t] Cycle Theme\n" +
-		"  [g] Toggle Ghost Pacer (Off/60/80/100/120 WPM)   [h] Keyboard Heatmap\n" +
-		"  [← / → / 1-5] Select Duration                   [Enter / Space] Start Test"
+		"  [m] Toggle Mode (Paragraph/Code/Adaptive/Quotes)  [t] Cycle Theme\n" +
+		"  [g] Toggle Ghost Pacer (Off/60/80/100/120 WPM)   [k] Keyboard Heatmap\n" +
+		"  [v] Toggle Keyboard Overlay (-showkeys)           [Enter / Space] Start Test"
 	b.WriteString(s.StyleHelp.Render(helpText))
 
 	content := b.String()
@@ -101,12 +115,12 @@ func RenderMenuView(
 	return content
 }
 
-// RenderTestView renders live test with Ghost Pacer and target word wrap.
-func RenderTestView(t *stats.Tracker, theme config.Theme, termWidth int) string {
+// RenderTestView renders live test screen.
+func RenderTestView(t *stats.Tracker, theme config.Theme, showKeys bool, activeRune rune, termWidth int) string {
 	s := NewDynamicStyles(theme)
 	var b strings.Builder
 
-	// Header Bar: Time left, Live WPM, Accuracy, Ghost Pacer
+	// Header Bar: Time left, Live WPM, Accuracy, Ghost Pacer, Hardcore Mode Badges
 	remSec := t.RemainingSeconds()
 	liveWPM := t.CalculateWPM()
 	liveAcc := t.CalculateAccuracy()
@@ -117,14 +131,25 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, termWidth int) string 
 
 	headerItems := []string{timeBadge, "   ", wpmBadge, "   ", accBadge}
 	if t.TargetWPM > 0 {
-		ghostBadge := s.StyleCard.Render(fmt.Sprintf("GHOST: %.0f WPM", t.TargetWPM))
+		ghostBadge := s.StyleCard.Render(fmt.Sprintf("GHOST: %.0f WPM 👻", t.TargetWPM))
 		headerItems = append(headerItems, "   ", ghostBadge)
+	}
+	if t.PBWPM > 0 {
+		pbBadge := s.StyleCard.Render(fmt.Sprintf("PB: %.0f WPM 🏆", t.PBWPM))
+		headerItems = append(headerItems, "   ", pbBadge)
+	}
+	if t.StopOnError {
+		soeBadge := s.StyleActive.Render(" STOP-ON-ERROR ")
+		headerItems = append(headerItems, "   ", soeBadge)
+	}
+	if t.SuddenDeath {
+		sdBadge := s.StyleActive.Render(" SUDDEN-DEATH 💀 ")
+		headerItems = append(headerItems, "   ", sdBadge)
 	}
 
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, headerItems...))
 	b.WriteString("\n\n")
 
-	// Target text container calculation
 	maxWidth := termWidth - 10
 	if maxWidth < 40 {
 		maxWidth = 40
@@ -134,8 +159,8 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, termWidth int) string 
 	for i, r := range t.TargetRunes {
 		charStr := string(r)
 
-		// Ghost Pacer cursor check
-		isGhost := (t.TargetWPM > 0 && i == t.GhostCursorIdx && i != t.CursorIdx)
+		isTargetGhost := (t.TargetWPM > 0 && i == t.GhostCursorIdx && i != t.CursorIdx)
+		isPBGhost := (t.PBWPM > 0 && i == t.PBGhostCursorIdx && i != t.CursorIdx)
 
 		if i == t.CursorIdx {
 			if r == ' ' {
@@ -143,7 +168,9 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, termWidth int) string 
 			} else {
 				textBuilder.WriteString(s.StyleCursor.Render(charStr))
 			}
-		} else if isGhost {
+		} else if isPBGhost {
+			textBuilder.WriteString(lipgloss.NewStyle().Foreground(theme.Highlight).Underline(true).Render("🏆"))
+		} else if isTargetGhost {
 			textBuilder.WriteString(s.StyleGhost.Render(charStr))
 		} else if i < t.CursorIdx {
 			if t.CharStates[i] == stats.StatusCorrect {
@@ -169,6 +196,12 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, termWidth int) string 
 	b.WriteString(textBoxStyle.Render(textBuilder.String()))
 	b.WriteString("\n\n")
 
+	// Render Visual Keyboard Overlay if active
+	if showKeys {
+		b.WriteString(RenderVisualKeyboardOverlay(activeRune, theme, termWidth))
+		b.WriteString("\n\n")
+	}
+
 	b.WriteString(s.StyleSubtext.Render("[Tab] Restart Test    [Esc] Return to Menu"))
 
 	content := b.String()
@@ -178,7 +211,7 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, termWidth int) string 
 	return content
 }
 
-// RenderResultsView renders post-game stats, asciigraph WPM timeline, and slowest key transitions breakdown.
+// RenderResultsView renders post-game stats.
 func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) string {
 	s := NewDynamicStyles(theme)
 	var b strings.Builder
@@ -189,7 +222,7 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 
 	// Stat Cards
 	netWPM := t.CalculateWPM()
-	rawWPM := t.CalculateRawWPM()
+	grossWPM := t.CalculateGrossWPM()
 	acc := t.CalculateAccuracy()
 	consistency := t.CalculateConsistency()
 
@@ -197,9 +230,9 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 		lipgloss.NewStyle().Foreground(theme.Subtle).Bold(true).Render("NET WPM"),
 		s.StyleCardVal.Render(fmt.Sprintf("%.1f", netWPM)),
 	)
-	cardRaw := lipgloss.JoinVertical(lipgloss.Center,
-		lipgloss.NewStyle().Foreground(theme.Subtle).Bold(true).Render("RAW WPM"),
-		s.StyleCardVal.Render(fmt.Sprintf("%.1f", rawWPM)),
+	cardGross := lipgloss.JoinVertical(lipgloss.Center,
+		lipgloss.NewStyle().Foreground(theme.Subtle).Bold(true).Render("GROSS WPM"),
+		s.StyleCardVal.Render(fmt.Sprintf("%.1f", grossWPM)),
 	)
 	cardAcc := lipgloss.JoinVertical(lipgloss.Center,
 		lipgloss.NewStyle().Foreground(theme.Subtle).Bold(true).Render("ACCURACY"),
@@ -211,7 +244,7 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 	)
 
 	box1 := s.StyleCard.Render(cardWPM)
-	box2 := s.StyleCard.Render(cardRaw)
+	box2 := s.StyleCard.Render(cardGross)
 	box3 := s.StyleCard.Render(cardAcc)
 	box4 := s.StyleCard.Render(cardCons)
 
@@ -219,7 +252,7 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 	b.WriteString(statRow)
 	b.WriteString("\n\n")
 
-	// Keystrokes & Slowest Keys Breakdown
+	// Keystrokes Detail Line
 	b.WriteString(s.StyleSubtext.Render(fmt.Sprintf(
 		"Keystrokes: Correct %d | Errors %d | Backspaces %d | Total %d",
 		t.CorrectKeystrokes, t.ErrorKeystrokes, t.BackspaceCount, t.TotalKeystrokes,

@@ -18,22 +18,25 @@ JeeraType is a 100% offline, cross-platform terminal-based typing speed tester w
 
 ## Key Features
 
-- **100% Offline & Single Binary**: Uses Go's native `//go:embed` for paragraph and code datasets. No runtime API or network calls.
-- **Pure Go SQLite Engine**: Uses `modernc.org/sqlite` (zero CGO/GCC requirement) to persist completed test runs and keystroke statistics in `~/.config/jeeratype/stats.db`.
-- **Keystroke Latency & Error Tracking**: Records millisecond timing between consecutive keystrokes and calculates error counts per key.
-- **Adaptive Weakness Mode**: Generates text passages prioritizing your top slowest and most missed keys.
-- **Ghost Pacer Cursor**: Optional pacemaker cursor moving through the target text at a fixed speed (60, 80, 100, or 120 WPM).
-- **ASCII QWERTY Keyboard Heatmap**: Displays an ASCII QWERTY keyboard color-coded by accuracy and latency.
-- **Developer Code Mode**: Typing passages sourced from Go, Rust, JavaScript, and Python code blocks.
-- **Color Themes**: Selectable themes including Amber, Catppuccin, Nord, Dracula, and Matrix.
-- **WPM Timeline Graphing**: Renders WPM over time using `asciigraph`.
+- **100% Offline & Single Binary**: Uses Go's native `//go:embed` for paragraphs, quotes, and code datasets. Zero runtime network calls.
+- **Pure Go SQLite Engine**: Uses `modernc.org/sqlite` (zero CGO/GCC requirement) to persist completed test runs, key transition latencies, and file reading progress offsets in `~/.config/jeeratype/stats.db`.
+- **UNIX STDIN & Pipe Support**: Accepts text via standard input (e.g. `cat file.txt | jeeratype`).
+- **File Reader with Auto-Resume**: Opening a text file (`jeeratype /path/to/book.txt`) saves cursor progress in SQLite and automatically resumes where you left off.
+- **Industrial Math Engine**: Computes Gross WPM `((total_keystrokes/5) / elapsed_minutes)`, Net WPM, Accuracy %, and WPM consistency.
+- **Adaptive Weakness Engine**: Measures millisecond latency between key transitions (bigrams) and error rates, generating custom drill passages targeting your weakest keys.
+- **Ghost Pacers & PB Replay**: Includes Target Ghost Pacer (60, 80, 100, 120 WPM) and Personal Best (PB) Ghost Replay `🏆` stored in SQLite.
+- **Hardcore Modes**:
+  - `--stop-on-error` / `-soe`: Forces error correction before advancing.
+  - `--sudden-death` / `-sd`: Single typo ends the test immediately.
+- **Visual Keyboard Overlay (`-showkeys` / `-sk`)**: Displays a live QWERTY keyboard at the bottom of the screen highlighting key presses in real-time.
+- **Scriptable UNIX Exporters (`-csv` / `-json`)**: Outputs historical typing data directly in structured CSV or JSON for shell scripts and spreadsheets.
+- **Color Themes & TOML Loader**: Built-in themes (`Amber`, `Catppuccin`, `Nord`, `Dracula`, `Matrix`, `Gruvbox`) plus custom `.toml` theme loading (`--config-theme`).
 
 ---
 
 ## Installation
 
 ### 🍎 macOS & 🐧 Linux (Global One-Line Install)
-Open terminal and run:
 ```bash
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sudo sh
 ```
@@ -53,66 +56,33 @@ irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | i
 go install github.com/Codexia-afk/JeeraType@latest
 ```
 
-### 📦 Pre-Built Binaries
-Pre-compiled static binaries for macOS, Linux, and Windows are available on the [GitHub Releases](https://github.com/Codexia-afk/JeeraType/releases) page.
-
 ---
 
-## Usage
-
-Run `jeeratype` in your terminal:
+## Usage & CLI Flags
 
 ```bash
+# Launch interactive TUI
 jeeratype
-```
 
-### Keybindings
+# Pipe UNIX text into JeeraType
+cat essay.txt | jeeratype
 
-#### Main Menu
-- `1` – `5` or `←` / `→` : Select test duration (15s, 30s, 45s, 60s, 120s)
-- `m` : Cycle typing mode (**Paragraphs** ➔ **Code Mode** ➔ **Adaptive Weakness**)
-- `t` : Cycle theme (**Amber** ➔ **Catppuccin** ➔ **Nord** ➔ **Dracula** ➔ **Matrix**)
-- `g` : Cycle Ghost Pacer speed (**Off** ➔ **60** ➔ **80** ➔ **100** ➔ **120 WPM**)
-- `k` : Open ASCII Keyboard Heatmap
-- `Enter` / `Space` : Start test
-- `Esc` / `q` : Quit
+# Open file with auto-resume progress offset
+jeeratype /path/to/book.txt
 
-#### Active Test
-- Type text as displayed
-- `Backspace` : Delete last character
-- `Tab` : Restart test with new text
-- `Esc` : Return to main menu
+# Hardcore Modes
+jeeratype --stop-on-error
+jeeratype --sudden-death
 
-#### Results Screen
-- `Tab` / `Enter` : Start new test
-- `k` : View ASCII Keyboard Heatmap
-- `Esc` : Main menu
-- `q` : Quit
+# Visual Keyboard Overlay & Custom Theme
+jeeratype --showkeys --theme catppuccin --ghost 80
 
----
-
-## Command-Line Flags
-
-```bash
-# Output ASCII Keyboard Heatmap directly in terminal
+# Output Keyboard Heatmap
 jeeratype --stats
 
-# Start with a specific theme and Ghost Pacer speed
-jeeratype --theme catppuccin --ghost 80
-
-# Start in Developer Code Mode
-jeeratype --mode code
-```
-
----
-
-## Building From Source
-
-```bash
-git clone https://github.com/Codexia-afk/JeeraType.git
-cd JeeraType
-go build -o jeeratype .
-./jeeratype
+# Export UNIX CSV / JSON data
+jeeratype --csv
+jeeratype --json
 ```
 
 ---

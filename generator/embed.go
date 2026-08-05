@@ -14,6 +14,9 @@ var embeddedParagraphsData []byte
 //go:embed code_snippets.json
 var embeddedCodeData []byte
 
+//go:embed quotes.json
+var embeddedQuotesData []byte
+
 type paragraphDataset struct {
 	Paragraphs []string `json:"paragraphs"`
 }
@@ -22,9 +25,14 @@ type codeDataset struct {
 	CodeSnippets []string `json:"code_snippets"`
 }
 
+type quoteDataset struct {
+	Quotes []string `json:"quotes"`
+}
+
 var (
 	cachedParagraphs []string
 	cachedCode       []string
+	cachedQuotes     []string
 )
 
 func init() {
@@ -43,6 +51,15 @@ func init() {
 	} else {
 		cachedCode = []string{
 			"func main() {\n    fmt.Println(\"JeeraType Code Mode\")\n}",
+		}
+	}
+
+	var qData quoteDataset
+	if err := json.Unmarshal(embeddedQuotesData, &qData); err == nil && len(qData.Quotes) > 0 {
+		cachedQuotes = qData.Quotes
+	} else {
+		cachedQuotes = []string{
+			"Simplicity is prerequisite for reliability. Complex systems tend to fail in mysterious ways.",
 		}
 	}
 }
@@ -95,6 +112,12 @@ func GenerateCodeText(targetDurationSec int) string {
 	return strings.Join(snippets, "\n\n")
 }
 
+// GenerateQuoteText returns quotes joined into a typing passage.
+func GenerateQuoteText() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return cachedQuotes[r.Intn(len(cachedQuotes))]
+}
+
 // GenerateAdaptiveText generates text heavy in the user's weak keys and bigram transitions.
 func GenerateAdaptiveText(weakKeys []rune, weakBigrams []string, targetDurationSec int) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -103,14 +126,12 @@ func GenerateAdaptiveText(weakKeys []rune, weakBigrams []string, targetDurationS
 		targetWordCount = 60
 	}
 
-	// Extract all words from dataset
 	var allWords []string
 	for _, p := range cachedParagraphs {
 		words := strings.Fields(p)
 		allWords = append(allWords, words...)
 	}
 
-	// Filter words containing weak keys or bigrams
 	var prioritizedWords []string
 	for _, word := range allWords {
 		lowerWord := strings.ToLower(word)
