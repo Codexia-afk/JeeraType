@@ -23,15 +23,33 @@ if [ -z "$LATEST_TAG" ]; then
   LATEST_TAG="v1.0.0"
 fi
 
-TAR_FILE="${BINARY_NAME}_${LATEST_TAG#v}_${OS}_${ARCH}.tar.gz"
-DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_TAG}/${TAR_FILE}"
+VERSION_NUM="${LATEST_TAG#v}"
+TAR_FILE="jeeratype_${VERSION_NUM}_${OS}_${ARCH}.tar.gz"
 
 TMP_DIR=$(mktemp -d)
 cd "$TMP_DIR"
 
-echo "📥 Downloading from ${DOWNLOAD_URL}..."
-curl -sSL "$DOWNLOAD_URL" -o "$TAR_FILE"
+URL_LOWER="https://github.com/${REPO}/releases/download/${LATEST_TAG}/jeeratype_${VERSION_NUM}_${OS}_${ARCH}.tar.gz"
+URL_UPPER="https://github.com/${REPO}/releases/download/${LATEST_TAG}/JeeraType_${VERSION_NUM}_${OS}_${ARCH}.tar.gz"
+
+echo "📥 Downloading JeeraType ${LATEST_TAG}..."
+if ! curl -sSLf "$URL_LOWER" -o "$TAR_FILE" 2>/dev/null; then
+  if ! curl -sSLf "$URL_UPPER" -o "$TAR_FILE" 2>/dev/null; then
+    echo "❌ Failed to download release archive from GitHub."
+    echo "Please check available releases at: https://github.com/${REPO}/releases"
+    exit 1
+  fi
+fi
+
 tar -xzf "$TAR_FILE"
+
+# Find binary inside extracted directory (case insensitive search)
+FOUND_BIN=$(find . -maxdepth 2 -type f \( -name "jeeratype" -o -name "JeeraType" \) | head -n 1)
+
+if [ -z "$FOUND_BIN" ]; then
+  echo "❌ Error: Could not locate jeeratype binary inside extracted package."
+  exit 1
+fi
 
 INSTALL_DIR="/usr/local/bin"
 if [ ! -w "$INSTALL_DIR" ]; then
@@ -39,7 +57,7 @@ if [ ! -w "$INSTALL_DIR" ]; then
   mkdir -p "$INSTALL_DIR"
 fi
 
-mv "$BINARY_NAME" "$INSTALL_DIR/$BINARY_NAME"
+mv "$FOUND_BIN" "$INSTALL_DIR/$BINARY_NAME"
 chmod +x "$INSTALL_DIR/$BINARY_NAME"
 
 echo "✅ JeeraType installed successfully to ${INSTALL_DIR}/${BINARY_NAME}!"
