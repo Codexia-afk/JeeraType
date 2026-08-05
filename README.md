@@ -32,7 +32,12 @@ JeeraType is a 100% offline, cross-platform terminal-based typing speed tester w
 
 ## Installation
 
-### 🍎 macOS & 🐧 Linux (One-Line Install)
+### 🍎 macOS & 🐧 Linux (Global One-Line Install)
+Open terminal and run:
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sudo sh
+```
+*Or without `sudo`:*
 ```bash
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sh
 ```

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-# JeeraType Universal Installer Script
+# JeeraType Universal Global Installer Script
 REPO="Codexia-afk/JeeraType"
 BINARY_NAME="jeeratype"
 
@@ -14,7 +14,7 @@ case "$ARCH" in
   *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
-echo "🚀 Installing JeeraType for ${OS}/${ARCH}..."
+echo "🚀 Installing JeeraType globally for ${OS}/${ARCH}..."
 
 # Fetch latest version tag from GitHub API
 LATEST_TAG=$(curl -s https://api.github.com/repos/${REPO}/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -51,49 +51,47 @@ if [ -z "$FOUND_BIN" ]; then
   exit 1
 fi
 
-INSTALL_DIR="/usr/local/bin"
-if [ ! -w "$INSTALL_DIR" ]; then
-  INSTALL_DIR="$HOME/.local/bin"
-  mkdir -p "$INSTALL_DIR"
+chmod +x "$FOUND_BIN"
+
+# Target global binary path
+GLOBAL_DIR="/usr/local/bin"
+
+if [ -w "$GLOBAL_DIR" ]; then
+  mv "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME"
+  chmod +x "$GLOBAL_DIR/$BINARY_NAME"
+  echo ""
+  echo "✅ JeeraType installed globally to ${GLOBAL_DIR}/${BINARY_NAME}!"
+  echo "Type 'jeeratype' anywhere in your terminal to start!"
+  exit 0
 fi
 
-mv "$FOUND_BIN" "$INSTALL_DIR/$BINARY_NAME"
-chmod +x "$INSTALL_DIR/$BINARY_NAME"
+# Try installing with sudo if available
+if command -v sudo >/dev/null 2>&1; then
+  echo "⚙️ Installing to global system path ${GLOBAL_DIR}..."
+  if sudo mv "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME" 2>/dev/null && sudo chmod +x "$GLOBAL_DIR/$BINARY_NAME" 2>/dev/null; then
+    echo ""
+    echo "✅ JeeraType installed globally to ${GLOBAL_DIR}/${BINARY_NAME}!"
+    echo "Type 'jeeratype' anywhere in your terminal to start!"
+    exit 0
+  fi
+fi
+
+# Fallback: install to $HOME/.local/bin and automatically update PATH in all user shell configs
+FALLBACK_DIR="$HOME/.local/bin"
+mkdir -p "$FALLBACK_DIR"
+mv "$FOUND_BIN" "$FALLBACK_DIR/$BINARY_NAME"
+chmod +x "$FALLBACK_DIR/$BINARY_NAME"
+
+# Automatically update PATH across all common shell configuration files
+PROFILES="$HOME/.zshrc $HOME/.bashrc $HOME/.profile $HOME/.bash_profile $HOME/.config/fish/config.fish"
+for PROFILE in $PROFILES; do
+  if [ -f "$PROFILE" ] && [ -w "$PROFILE" ]; then
+    if ! grep -q "$FALLBACK_DIR" "$PROFILE"; then
+      echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$PROFILE"
+    fi
+  fi
+done
 
 echo ""
-echo "✅ JeeraType installed successfully to ${INSTALL_DIR}/${BINARY_NAME}!"
-
-# PATH check & automatic shell profile update
-case ":$PATH:" in
-  *":$INSTALL_DIR:"*)
-    echo "Run 'jeeratype' in your terminal to start typing!"
-    ;;
-  *)
-    ADDED_PROFILE=0
-    SHELL_PROFILE=""
-    if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zshrc" ]; then
-      SHELL_PROFILE="$HOME/.zshrc"
-    elif [ -f "$HOME/.bashrc" ]; then
-      SHELL_PROFILE="$HOME/.bashrc"
-    fi
-
-    if [ -n "$SHELL_PROFILE" ] && [ -w "$SHELL_PROFILE" ]; then
-      if ! grep -q "$INSTALL_DIR" "$SHELL_PROFILE"; then
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_PROFILE"
-        ADDED_PROFILE=1
-      fi
-    fi
-
-    echo ""
-    echo "⚠️  Note: ${INSTALL_DIR} was not in your active PATH."
-    if [ $ADDED_PROFILE -eq 1 ]; then
-      echo "⚙️ Added ${INSTALL_DIR} to ${SHELL_PROFILE}."
-      echo "To start right now, run:"
-      echo "  ${INSTALL_DIR}/${BINARY_NAME}"
-      echo "Or restart your terminal / run 'source ${SHELL_PROFILE}' to use 'jeeratype'."
-    else
-      echo "To start right now, run:"
-      echo "  ${INSTALL_DIR}/${BINARY_NAME}"
-    fi
-    ;;
-esac
+echo "✅ JeeraType installed to ${FALLBACK_DIR}/${BINARY_NAME}!"
+echo "Type 'jeeratype' in any terminal window to start typing!"
