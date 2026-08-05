@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"jeeratype/config"
-	"jeeratype/db"
+	"github.com/Codexia-afk/JeeraType/config"
+	"github.com/Codexia-afk/JeeraType/db"
 )
 
 // RenderKeyboardHeatmap renders a full color-coded ASCII QWERTY keyboard heatmap.

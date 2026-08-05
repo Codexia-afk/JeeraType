@@ -4,12 +4,12 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"jeeratype/config"
-	"jeeratype/db"
-	"jeeratype/generator"
-	"jeeratype/stats"
-	"jeeratype/storage"
-	"jeeratype/ui"
+	"github.com/Codexia-afk/JeeraType/config"
+	"github.com/Codexia-afk/JeeraType/db"
+	"github.com/Codexia-afk/JeeraType/generator"
+	"github.com/Codexia-afk/JeeraType/stats"
+	"github.com/Codexia-afk/JeeraType/storage"
+	"github.com/Codexia-afk/JeeraType/ui"
 )
 
 // Model represents top-level Elm architecture model for JeeraType.

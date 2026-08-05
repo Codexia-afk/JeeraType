@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/charmbracelet/lipgloss"
-	"jeeratype/config"
+	"github.com/Codexia-afk/JeeraType/config"
 )
 
 // DynamicStyles constructs Lipgloss styles dynamically based on selected Theme.

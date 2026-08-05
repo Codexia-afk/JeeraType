@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/charmbracelet/lipgloss"
-	"jeeratype/config"
+	"github.com/Codexia-afk/JeeraType/config"
 )
 
 const RawLogo = `     ___                     _____                 

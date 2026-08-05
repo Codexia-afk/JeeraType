@@ -6,10 +6,10 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"jeeratype/config"
-	"jeeratype/db"
-	"jeeratype/engine"
-	"jeeratype/ui"
+	"github.com/Codexia-afk/JeeraType/config"
+	"github.com/Codexia-afk/JeeraType/db"
+	"github.com/Codexia-afk/JeeraType/engine"
+	"github.com/Codexia-afk/JeeraType/ui"
 )
 
 func main() {

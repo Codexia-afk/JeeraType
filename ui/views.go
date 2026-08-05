@@ -6,8 +6,8 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/guptarohit/asciigraph"
-	"jeeratype/config"
-	"jeeratype/stats"
+	"github.com/Codexia-afk/JeeraType/config"
+	"github.com/Codexia-afk/JeeraType/stats"
 )
 
 type TestMode int

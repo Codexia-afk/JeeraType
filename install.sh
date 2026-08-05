@@ -2,7 +2,7 @@
 set -e
 
 # JeeraType Universal Installer Script
-REPO="yourusername/jeeratype"
+REPO="Codexia-afk/JeeraType"
 BINARY_NAME="jeeratype"
 
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"

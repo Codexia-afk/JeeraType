@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"jeeratype/db"
+	"github.com/Codexia-afk/JeeraType/db"
 )
 
 type CharStatus int
