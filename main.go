@@ -96,7 +96,7 @@ func main() {
 
 	wordlistPath := flag.String("wordlist", "", "Path to custom wordlist text file (must contain at least 50 words)")
 
-	themeName := flag.String("theme", "amber", "Set UI theme (amber, dracula, nord, solarized, catppuccin, matrix, gruvbox)")
+	themeName := flag.String("theme", "amber", "Set UI theme (amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, matrix, gruvbox)")
 	flag.StringVar(themeName, "t", "amber", "Set UI theme (shorthand)")
 
 	tomlThemePath := flag.String("config-theme", "", "Path to custom theme file")

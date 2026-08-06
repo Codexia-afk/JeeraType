@@ -34,6 +34,71 @@ var (
 		GhostCursor: lipgloss.Color("#6B7280"),
 	}
 
+	ThemeCyberpunk = Theme{
+		Name:        "cyberpunk",
+		Primary:     lipgloss.Color("#00F0FF"), // Electric Neon Cyan
+		Secondary:   lipgloss.Color("#FFE600"), // Neon Yellow
+		Success:     lipgloss.Color("#00FF66"), // Neon Mint
+		Error:       lipgloss.Color("#FF007F"), // Hot Pink
+		Dim:         lipgloss.Color("#3A1C71"), // Dark Purple Void
+		Subtle:      lipgloss.Color("#E0C3FC"), // Soft Violet
+		Background:  lipgloss.Color("#0D0221"),
+		Highlight:   lipgloss.Color("#FF007F"),
+		GhostCursor: lipgloss.Color("#4F1787"),
+	}
+
+	ThemeTokyoNight = Theme{
+		Name:        "tokyonight",
+		Primary:     lipgloss.Color("#7AA2F7"), // Tokyo Blue
+		Secondary:   lipgloss.Color("#E0AF68"), // Soft Gold
+		Success:     lipgloss.Color("#9ECE6A"), // Leaf Green
+		Error:       lipgloss.Color("#F7768E"), // Red Pink
+		Dim:         lipgloss.Color("#414868"), // Dark Slate
+		Subtle:      lipgloss.Color("#C0CAF5"), // Pale Blue
+		Background:  lipgloss.Color("#1A1B26"),
+		Highlight:   lipgloss.Color("#7DCFFF"), // Cyan
+		GhostCursor: lipgloss.Color("#24283B"),
+	}
+
+	ThemeMonokai = Theme{
+		Name:        "monokai",
+		Primary:     lipgloss.Color("#FFD866"), // Warm Gold
+		Secondary:   lipgloss.Color("#FC9867"), // Sunset Orange
+		Success:     lipgloss.Color("#A9DC76"), // Mint Green
+		Error:       lipgloss.Color("#FF6188"), // Crimson Pink
+		Dim:         lipgloss.Color("#5B585C"), // Medium Charcoal
+		Subtle:      lipgloss.Color("#FCE5C0"), // Cream
+		Background:  lipgloss.Color("#2D2A2E"), // Dark Obsidian
+		Highlight:   lipgloss.Color("#78DCE8"), // Cyan
+		GhostCursor: lipgloss.Color("#403E41"),
+	}
+
+	ThemeRosePine = Theme{
+		Name:        "rose-pine",
+		Primary:     lipgloss.Color("#EBBCBA"), // Rose Gold
+		Secondary:   lipgloss.Color("#F6C177"), // Gold
+		Success:     lipgloss.Color("#31748F"), // Pine Cyan
+		Error:       lipgloss.Color("#EB6F92"), // Love Red
+		Dim:         lipgloss.Color("#403C58"), // Dark Dusk
+		Subtle:      lipgloss.Color("#E0DEF4"), // Subtext
+		Background:  lipgloss.Color("#191724"),
+		Highlight:   lipgloss.Color("#C4A7E7"), // Iris Purple
+		GhostCursor: lipgloss.Color("#26233A"),
+	}
+
+	ThemeSynthwave = Theme{
+		Name:        "synthwave",
+		Primary:     lipgloss.Color("#FF7ED4"), // Retro Pink
+		Secondary:   lipgloss.Color("#FEDE5D"), // Neon Yellow
+		Success:     lipgloss.Color("#72F1B8"), // Mint Green
+		Error:       lipgloss.Color("#FE4450"), // Bright Red
+		Dim:         lipgloss.Color("#493967"), // Arcade Dark
+		Subtle:      lipgloss.Color("#F9F8F6"), // Light Chalk
+		Background:  lipgloss.Color("#241B2F"),
+		Highlight:   lipgloss.Color("#36F9F6"), // Neon Cyan
+		GhostCursor: lipgloss.Color("#342948"),
+	}
+
 	ThemeCatppuccin = Theme{
 		Name:        "catppuccin",
 		Primary:     lipgloss.Color("#CBA6F7"), // Mauve
@@ -114,6 +179,11 @@ var (
 
 	AvailableThemes = []Theme{
 		ThemeAmber,
+		ThemeCyberpunk,
+		ThemeTokyoNight,
+		ThemeMonokai,
+		ThemeRosePine,
+		ThemeSynthwave,
 		ThemeDracula,
 		ThemeNord,
 		ThemeSolarized,

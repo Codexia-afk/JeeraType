@@ -120,7 +120,7 @@ jeeratype --stop-on-error -soe# Forces error correction before advancing
 jeeratype --ghost 80 -g 80    # Set Target Ghost Pacer to 80 WPM
 
 # 🎨 Customization & Audio
-jeeratype --theme dracula -t dracula # Options: amber, dracula, nord, solarized, catppuccin, gruvbox, matrix
+jeeratype --theme cyberpunk -t cyberpunk # Options: amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, gruvbox, matrix
 jeeratype --sound            # Enable terminal bell / audio click feedback
 jeeratype --showkeys -sk      # Enable live visual QWERTY keyboard overlay at bottom
 
