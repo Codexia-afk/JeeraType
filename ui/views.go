@@ -63,11 +63,16 @@ func RenderCountdownView(count int, theme config.Theme, termWidth int) string {
 	b.WriteString("\n\n")
 	b.WriteString(lipgloss.NewStyle().Foreground(theme.Subtle).Italic(true).Render("Get ready to type..."))
 
-	content := b.String()
-	if termWidth > 0 {
-		return lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, content)
+	lines := strings.Split(b.String(), "\n")
+	var centeredLines []string
+	for _, l := range lines {
+		if termWidth > 0 && len(l) > 0 {
+			centeredLines = append(centeredLines, lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, l))
+		} else {
+			centeredLines = append(centeredLines, l)
+		}
 	}
-	return content
+	return strings.Join(centeredLines, "\n")
 }
 
 // RenderMenuView renders initial options.
@@ -151,11 +156,16 @@ func RenderMenuView(
 		"  [v] Visual Keyboard       [1-5] Duration        [Enter / Space] Start"
 	b.WriteString(s.StyleHelp.Render(helpText))
 
-	content := b.String()
-	if termWidth > 0 {
-		return lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, content)
+	lines := strings.Split(b.String(), "\n")
+	var centeredLines []string
+	for _, l := range lines {
+		if termWidth > 0 && len(l) > 0 {
+			centeredLines = append(centeredLines, lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, l))
+		} else {
+			centeredLines = append(centeredLines, l)
+		}
 	}
-	return content
+	return strings.Join(centeredLines, "\n")
 }
 
 // RenderTestView renders live test screen.
@@ -252,11 +262,16 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, showKeys bool, activeR
 
 	b.WriteString(footerBar)
 
-	content := b.String()
-	if termWidth > 0 {
-		return lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, content)
+	lines := strings.Split(b.String(), "\n")
+	var centeredLines []string
+	for _, l := range lines {
+		if termWidth > 0 && len(l) > 0 {
+			centeredLines = append(centeredLines, lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, l))
+		} else {
+			centeredLines = append(centeredLines, l)
+		}
 	}
-	return content
+	return strings.Join(centeredLines, "\n")
 }
 
 // RenderResultsView renders post-game stats.
@@ -275,7 +290,7 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 		Foreground(theme.Primary).
 		Bold(true).
 		Render(stats.FormatStreakBadge(streak))
-	b.WriteString(lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, streakBadge))
+	b.WriteString(streakBadge)
 	b.WriteString("\n\n")
 
 	// Personal Best Banner if beaten
@@ -335,8 +350,8 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 		if graphWidth < 30 {
 			graphWidth = 30
 		}
-		if graphWidth > 70 {
-			graphWidth = 70
+		if graphWidth > 60 {
+			graphWidth = 60
 		}
 
 		graphPlot := asciigraph.Plot(
@@ -359,9 +374,14 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 	footer := "[Tab / Enter] Test Again    [h] Keyboard Heatmap    [Esc] Menu    [q] Quit"
 	b.WriteString(s.StyleActive.Render(footer))
 
-	content := b.String()
-	if termWidth > 0 {
-		return lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, content)
+	lines := strings.Split(b.String(), "\n")
+	var centeredLines []string
+	for _, l := range lines {
+		if termWidth > 0 && len(l) > 0 {
+			centeredLines = append(centeredLines, lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, l))
+		} else {
+			centeredLines = append(centeredLines, l)
+		}
 	}
-	return content
+	return strings.Join(centeredLines, "\n")
 }
