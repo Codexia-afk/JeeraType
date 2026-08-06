@@ -19,12 +19,12 @@ type AppConfig struct {
 
 func DefaultConfig() AppConfig {
 	return AppConfig{
-		Theme:          "amber",
+		Theme:          "default",
 		DefaultProfile: "default",
 		Punctuation:    false,
 		Numbers:        false,
 		Sound:          false,
-		LastMode:       "paragraphs",
+		LastMode:       "time",
 		LastDuration:   30,
 	}
 }
@@ -60,7 +60,7 @@ func LoadConfig() AppConfig {
 
 	_ = json.Unmarshal(data, &cfg)
 	if cfg.Theme == "" {
-		cfg.Theme = "amber"
+		cfg.Theme = "default"
 	}
 	if cfg.DefaultProfile == "" {
 		cfg.DefaultProfile = "default"

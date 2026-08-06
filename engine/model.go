@@ -49,7 +49,7 @@ func NewModel() *Model {
 		timeModes:       []int{15, 30, 45, 60, 120},
 		selectedModeIdx: 0,
 		currentMode:     ui.ModeParagraphs,
-		currentTheme:    config.ThemeAmber,
+		currentTheme:    config.ThemeDefault,
 		ghostWPM:        0,
 		punctuation:     false,
 		numbers:         false,

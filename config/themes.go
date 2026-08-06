@@ -21,17 +21,56 @@ type Theme struct {
 }
 
 var (
-	ThemeAmber = Theme{
-		Name:        "amber",
-		Primary:     lipgloss.Color("#D97706"),
-		Secondary:   lipgloss.Color("#F59E0B"),
-		Success:     lipgloss.Color("#10B981"),
-		Error:       lipgloss.Color("#EF4444"),
-		Dim:         lipgloss.Color("#4B5563"),
-		Subtle:      lipgloss.Color("#9CA3AF"),
-		Background:  lipgloss.Color("#111827"),
-		Highlight:   lipgloss.Color("#FBBF24"),
+	ThemeDefault = Theme{
+		Name:        "default",
+		Primary:     lipgloss.Color("#3B82F6"), // Vibrant Blue
+		Secondary:   lipgloss.Color("#60A5FA"), // Sky Blue
+		Success:     lipgloss.Color("#10B981"), // Emerald Green
+		Error:       lipgloss.Color("#EF4444"), // Crimson Red
+		Dim:         lipgloss.Color("#4B5563"), // Dark Slate
+		Subtle:      lipgloss.Color("#9CA3AF"), // Light Gray
+		Background:  lipgloss.Color("#0F172A"), // Deep Navy/Slate
+		Highlight:   lipgloss.Color("#F59E0B"), // Amber Highlight
 		GhostCursor: lipgloss.Color("#6B7280"),
+	}
+
+	ThemeDracula = Theme{
+		Name:        "dracula",
+		Primary:     lipgloss.Color("#BD93F9"),
+		Secondary:   lipgloss.Color("#F1FA8C"),
+		Success:     lipgloss.Color("#50FA7B"),
+		Error:       lipgloss.Color("#FF5555"),
+		Dim:         lipgloss.Color("#6272A4"),
+		Subtle:      lipgloss.Color("#F8F8F2"),
+		Background:  lipgloss.Color("#282A36"),
+		Highlight:   lipgloss.Color("#8BE9FD"),
+		GhostCursor: lipgloss.Color("#44475A"),
+	}
+
+	ThemeNord = Theme{
+		Name:        "nord",
+		Primary:     lipgloss.Color("#88C0D0"),
+		Secondary:   lipgloss.Color("#EBCB8B"),
+		Success:     lipgloss.Color("#A3BE8C"),
+		Error:       lipgloss.Color("#BF616A"),
+		Dim:         lipgloss.Color("#4C566A"),
+		Subtle:      lipgloss.Color("#D8DEE9"),
+		Background:  lipgloss.Color("#2E3440"),
+		Highlight:   lipgloss.Color("#81A1C1"),
+		GhostCursor: lipgloss.Color("#434C5E"),
+	}
+
+	ThemeSolarized = Theme{
+		Name:        "solarized",
+		Primary:     lipgloss.Color("#268BD2"),
+		Secondary:   lipgloss.Color("#B58900"),
+		Success:     lipgloss.Color("#859900"),
+		Error:       lipgloss.Color("#DC322F"),
+		Dim:         lipgloss.Color("#586E75"),
+		Subtle:      lipgloss.Color("#93A1A1"),
+		Background:  lipgloss.Color("#002B36"),
+		Highlight:   lipgloss.Color("#2AA198"),
+		GhostCursor: lipgloss.Color("#073642"),
 	}
 
 	ThemeJewel = Theme{
@@ -112,181 +151,27 @@ var (
 		GhostCursor: lipgloss.Color("#222222"),
 	}
 
-	ThemeCyberpunk = Theme{
-		Name:        "cyberpunk",
-		Primary:     lipgloss.Color("#00F0FF"),
-		Secondary:   lipgloss.Color("#FFE600"),
-		Success:     lipgloss.Color("#00FF66"),
-		Error:       lipgloss.Color("#FF007F"),
-		Dim:         lipgloss.Color("#3A1C71"),
-		Subtle:      lipgloss.Color("#E0C3FC"),
-		Background:  lipgloss.Color("#0D0221"),
-		Highlight:   lipgloss.Color("#FF007F"),
-		GhostCursor: lipgloss.Color("#4F1787"),
-	}
-
-	ThemeTokyoNight = Theme{
-		Name:        "tokyonight",
-		Primary:     lipgloss.Color("#7AA2F7"),
-		Secondary:   lipgloss.Color("#E0AF68"),
-		Success:     lipgloss.Color("#9ECE6A"),
-		Error:       lipgloss.Color("#F7768E"),
-		Dim:         lipgloss.Color("#414868"),
-		Subtle:      lipgloss.Color("#C0CAF5"),
-		Background:  lipgloss.Color("#1A1B26"),
-		Highlight:   lipgloss.Color("#7DCFFF"),
-		GhostCursor: lipgloss.Color("#24283B"),
-	}
-
-	ThemeMonokai = Theme{
-		Name:        "monokai",
-		Primary:     lipgloss.Color("#FFD866"),
-		Secondary:   lipgloss.Color("#FC9867"),
-		Success:     lipgloss.Color("#A9DC76"),
-		Error:       lipgloss.Color("#FF6188"),
-		Dim:         lipgloss.Color("#5B585C"),
-		Subtle:      lipgloss.Color("#FCE5C0"),
-		Background:  lipgloss.Color("#2D2A2E"),
-		Highlight:   lipgloss.Color("#78DCE8"),
-		GhostCursor: lipgloss.Color("#403E41"),
-	}
-
-	ThemeRosePine = Theme{
-		Name:        "rose-pine",
-		Primary:     lipgloss.Color("#EBBCBA"),
-		Secondary:   lipgloss.Color("#F6C177"),
-		Success:     lipgloss.Color("#31748F"),
-		Error:       lipgloss.Color("#EB6F92"),
-		Dim:         lipgloss.Color("#403C58"),
-		Subtle:      lipgloss.Color("#E0DEF4"),
-		Background:  lipgloss.Color("#191724"),
-		Highlight:   lipgloss.Color("#C4A7E7"),
-		GhostCursor: lipgloss.Color("#26233A"),
-	}
-
-	ThemeSynthwave = Theme{
-		Name:        "synthwave",
-		Primary:     lipgloss.Color("#FF7ED4"),
-		Secondary:   lipgloss.Color("#FEDE5D"),
-		Success:     lipgloss.Color("#72F1B8"),
-		Error:       lipgloss.Color("#FE4450"),
-		Dim:         lipgloss.Color("#493967"),
-		Subtle:      lipgloss.Color("#F9F8F6"),
-		Background:  lipgloss.Color("#241B2F"),
-		Highlight:   lipgloss.Color("#36F9F6"),
-		GhostCursor: lipgloss.Color("#342948"),
-	}
-
-	ThemeCatppuccin = Theme{
-		Name:        "catppuccin",
-		Primary:     lipgloss.Color("#CBA6F7"),
-		Secondary:   lipgloss.Color("#F9E2AF"),
-		Success:     lipgloss.Color("#A6E3A1"),
-		Error:       lipgloss.Color("#F38BA8"),
-		Dim:         lipgloss.Color("#585B70"),
-		Subtle:      lipgloss.Color("#BAC2DE"),
-		Background:  lipgloss.Color("#1E1E2E"),
-		Highlight:   lipgloss.Color("#89B4FA"),
-		GhostCursor: lipgloss.Color("#6C7086"),
-	}
-
-	ThemeNord = Theme{
-		Name:        "nord",
-		Primary:     lipgloss.Color("#88C0D0"),
-		Secondary:   lipgloss.Color("#EBCB8B"),
-		Success:     lipgloss.Color("#A3BE8C"),
-		Error:       lipgloss.Color("#BF616A"),
-		Dim:         lipgloss.Color("#4C566A"),
-		Subtle:      lipgloss.Color("#D8DEE9"),
-		Background:  lipgloss.Color("#2E3440"),
-		Highlight:   lipgloss.Color("#81A1C1"),
-		GhostCursor: lipgloss.Color("#434C5E"),
-	}
-
-	ThemeDracula = Theme{
-		Name:        "dracula",
-		Primary:     lipgloss.Color("#BD93F9"),
-		Secondary:   lipgloss.Color("#F1FA8C"),
-		Success:     lipgloss.Color("#50FA7B"),
-		Error:       lipgloss.Color("#FF5555"),
-		Dim:         lipgloss.Color("#6272A4"),
-		Subtle:      lipgloss.Color("#F8F8F2"),
-		Background:  lipgloss.Color("#282A36"),
-		Highlight:   lipgloss.Color("#8BE9FD"),
-		GhostCursor: lipgloss.Color("#44475A"),
-	}
-
-	ThemeSolarized = Theme{
-		Name:        "solarized",
-		Primary:     lipgloss.Color("#268BD2"),
-		Secondary:   lipgloss.Color("#B58900"),
-		Success:     lipgloss.Color("#859900"),
-		Error:       lipgloss.Color("#DC322F"),
-		Dim:         lipgloss.Color("#586E75"),
-		Subtle:      lipgloss.Color("#93A1A1"),
-		Background:  lipgloss.Color("#002B36"),
-		Highlight:   lipgloss.Color("#2AA198"),
-		GhostCursor: lipgloss.Color("#073642"),
-	}
-
-	ThemeMatrix = Theme{
-		Name:        "matrix",
-		Primary:     lipgloss.Color("#00FF66"),
-		Secondary:   lipgloss.Color("#CCFF00"),
-		Success:     lipgloss.Color("#00FF99"),
-		Error:       lipgloss.Color("#FF0055"),
-		Dim:         lipgloss.Color("#004D1A"),
-		Subtle:      lipgloss.Color("#66FF99"),
-		Background:  lipgloss.Color("#051A05"),
-		Highlight:   lipgloss.Color("#00FFCC"),
-		GhostCursor: lipgloss.Color("#006622"),
-	}
-
-	ThemeGruvbox = Theme{
-		Name:        "gruvbox",
-		Primary:     lipgloss.Color("#FE8019"),
-		Secondary:   lipgloss.Color("#FABD2F"),
-		Success:     lipgloss.Color("#B8BB26"),
-		Error:       lipgloss.Color("#FB4934"),
-		Dim:         lipgloss.Color("#665C54"),
-		Subtle:      lipgloss.Color("#EBDBB2"),
-		Background:  lipgloss.Color("#282828"),
-		Highlight:   lipgloss.Color("#83A598"),
-		GhostCursor: lipgloss.Color("#504945"),
-	}
-
 	AvailableThemes = []Theme{
-		ThemeAmber,
+		ThemeDefault,
+		ThemeDracula,
+		ThemeNord,
+		ThemeSolarized,
 		ThemeJewel,
 		ThemeSunset,
 		ThemeForest,
 		ThemeNeon,
 		ThemeVintage,
 		ThemeMono,
-		ThemeCyberpunk,
-		ThemeTokyoNight,
-		ThemeMonokai,
-		ThemeRosePine,
-		ThemeSynthwave,
-		ThemeDracula,
-		ThemeNord,
-		ThemeSolarized,
-		ThemeCatppuccin,
-		ThemeGruvbox,
-		ThemeMatrix,
 	}
 )
 
-// GetThemeByName returns matching Theme or default Amber.
+// GetThemeByName returns matching Theme or default Theme.
 func GetThemeByName(name string) Theme {
 	n := strings.ToLower(strings.TrimSpace(name))
-	if n == "default" {
-		n = "amber"
-	}
 	for _, t := range AvailableThemes {
 		if t.Name == n {
 			return t
 		}
 	}
-	return ThemeAmber
+	return ThemeDefault
 }
