@@ -61,6 +61,8 @@ irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | i
 powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex"
 ```
 
+> **Note on Updating**: You do **NOT** need to uninstall JeeraType before updating. Running the install command again automatically upgrades your binary to the latest version while preserving all your saved stats, history, and themes!
+
 ---
 
 ## 🗑️ Uninstalling
