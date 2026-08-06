@@ -1,38 +1,68 @@
 # Changelog — JeeraType
 
-All notable changes to **JeeraType** will be documented in this file.
+## v2.0.0 — Major Update Release Notes
+
+Welcome to JeeraType v2.0.0! This release introduces powerful new practice modes, rich stats tracking, custom themes, and under-the-hood polish.
+
+### New ways to practice
+
+- **Punctuation & numbers toggle**: Practice realistic text containing capital letters, commas, periods, and numbers instead of plain lowercase words.
+  *Command / Key:* Press `p` for punctuation or `n` for numbers on the menu, or run `jeeratype --punctuation --numbers`.
+
+- **Zen mode**: Type freely without any timer or word limits. Whenever you want to stop, press `Esc` to view your final typing speed and accuracy.
+  *Command / Key:* Press `z` on the menu or run `jeeratype --zen`.
+
+- **Code mode**: Practice typing real computer code snippets with correct indentation for Python, JavaScript, and Go.
+  *Command / Key:* Run `jeeratype --mode code --lang python` (or `js` / `go`).
+
+- **Death mode**: Test your ultimate accuracy by restarting the test immediately if you make a single typo.
+  *Command / Key:* Run `jeeratype --death`.
+
+- **Countdown timer**: A clear 3…2…1… countdown appears before each timed test starts so you can prepare your hands.
+  *Command / Key:* Starts automatically whenever you launch any timed typing test.
+
+- **Custom word lists**: Load your own custom text file to practice specific words or vocabulary lists.
+  *Command / Key:* Run `jeeratype --wordlist /path/to/mywords.txt`.
+
+### New stats & tracking
+
+- **Personal best tracking**: Automatically saves your highest typing speed for each mode and shows a celebration banner when you set a new record.
+  *Command / Key:* Appears on the results screen automatically whenever you beat your previous best.
+
+- **Session history**: View a clean summary table of your last 20 typing tests with trend arrows showing if your speed is improving over time.
+  *Command / Key:* Run `jeeratype stats`.
+
+- **Streak counter**: Tracks how many consecutive days you have practiced typing to keep you motivated.
+  *Command / Key:* Shown automatically on your test results screen (e.g., `🔥 5 day streak`).
+
+- **Key heatmap**: Displays a visual keyboard shaded by error frequency to help you identify which keys give you trouble.
+  *Command / Key:* Run `jeeratype stats --heatmap`.
+
+- **Local leaderboard**: Allows multiple people using the same computer to track separate practice profiles and compare top scores.
+  *Command / Key:* Run `jeeratype --profile Alex` and view rankings with `jeeratype stats --leaderboard`.
+
+- **Replay & race**: Save a past typing run to a file and re-type the passage to race live against your own past performance.
+  *Command / Key:* Run `jeeratype export-replay` and `jeeratype race replay.json`.
+
+### Customization
+
+- **Color themes**: Choose from vibrant built-in color themes like Dracula, Nord, Solarized, Amber, Catppuccin, Gruvbox, and Matrix.
+  *Command / Key:* Press `t` on the main menu or run `jeeratype --theme dracula`.
+
+- **Optional sound feedback**: Hear a subtle audio click or bell sound every time you press a key or make a typo.
+  *Command / Key:* Run `jeeratype --sound`.
+
+- **Always-visible footer hints**: Important hotkeys are displayed at the bottom of the screen during tests so you never forget controls.
+  *Command / Key:* Shown at the bottom of the screen (`Tab: restart   Esc: quit   Ctrl+C: force quit`).
+
+### Under the hood improvements
+
+- **100% offline**: Everything is stored directly on your computer, requiring zero internet connection.
+- **Single executable file**: Runs as a single file without needing extra software installations or dependencies.
+- **Cross-platform**: Behaves identically across Windows, macOS, and Linux terminal applications.
 
 ---
 
-## [v2.0.0] — Master Feature Expansion (Major Release)
+### How to update / install
 
-### 🚀 Tier 1 (Core Gameplay & UX Polish)
-- **Punctuation & Numbers Toggles (`--punctuation` / `-p`, `--numbers` / `-n`)**: Injects capitalization, commas, periods, semicolons, question marks, and digit tokens into typing text streams. Menu toggles `p` and `n`.
-- **Zen Mode (`--zen` / `-z`)**: Infinite typing mode with no timer or word cap. Text streams infinitely until `Esc` is pressed.
-- **Countdown Before Start**: Centered `3…2…1…` countdown animation rendered before input starts (omitted in Zen Mode).
-- **Persistent Runtime Footer**: Persistent footer hints bar `Tab: restart   Esc: quit   Ctrl+C: force quit` rendered at the bottom of the screen.
-- **Personal Best (PB) Celebration**: Tracks and compares PB scores per mode/duration/punctuation/numbers combo and displays `🎉 NEW BEST!` banners.
-
-### 📊 Tier 2 (Analytics, Streaks, Themes & Custom Lists)
-- **Session History Command (`jeeratype stats`)**: Subcommand rendering a table of your last 20 typing sessions with trend indicators (`↑` / `↓` / `–`) versus prior runs.
-- **Streak Counter**: Consecutive calendar day streak counter (`🔥 5 day streak`).
-- **Custom Word Lists (`--wordlist /path/to/file.txt`)**: Load custom word lists (validates file exists and contains ≥ 50 words).
-- **Lipgloss Themes Engine (`--theme <name>`)**: Themes (`amber`, `dracula`, `nord`, `solarized`, `catppuccin`, `gruvbox`, `matrix`) with JSON configuration persistence in `~/.config/jeeratype/config.json`.
-
-### 🎮 Tier 3 (Advanced Hardcore & Multi-User Features)
-- **Language Code Mode (`--mode code --lang python|js|go`)**: Snippet banks for Python, JavaScript, and Go.
-- **Death Mode (`--death` / `-d`)**: Any typo immediately resets the test session.
-- **Shaded Keyboard Heatmap (`jeeratype stats --heatmap`)**: ASCII QWERTY keyboard with 5 block shading intensity levels (`░`, `▒`, `▓`, `█`).
-- **Multi-User Leaderboard (`--profile <name>`, `jeeratype stats --leaderboard`)**: Scopes history to profiles and displays top WPM per profile.
-- **Replay Export & Race (`jeeratype export-replay`, `jeeratype race`)**: Export keystroke timelines to JSON and race against previous replays.
-- **Sound Feedback (`--sound`)**: Optional non-blocking terminal bell (`\a`) audio feedback.
-
----
-
-## [v1.0.2] — Master Architecture Initial Release
-- Pure Go SQLite Engine (`modernc.org/sqlite`).
-- UNIX STDIN Pipe support (`cat file.txt | jeeratype`).
-- File Reader with Auto-Resume progress offset (`jeeratype /path/to/book.txt`).
-- Hardcore modes (`--stop-on-error`, `--sudden-death`).
-- Visual Keyboard Overlay (`-showkeys`).
-- Scriptable UNIX Exporters (`-csv`, `-json`).
+Simply download the latest single binary for your operating system (Windows, macOS, or Linux) from the GitHub Releases page and run it directly in your terminal — no installation steps required!
