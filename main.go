@@ -20,6 +20,20 @@ import (
 )
 
 func main() {
+	// Subcommand: `jeeratype theme` (list | preview <name>)
+	if len(os.Args) > 1 && os.Args[1] == "theme" {
+		if len(os.Args) > 2 && os.Args[2] == "preview" {
+			themeName := "amber"
+			if len(os.Args) > 3 {
+				themeName = os.Args[3]
+			}
+			fmt.Println(cmd.RenderThemePreview(themeName))
+		} else {
+			fmt.Println(cmd.RenderThemeList())
+		}
+		os.Exit(0)
+	}
+
 	// Subcommand: `jeeratype stats` (--heatmap, --leaderboard)
 	if len(os.Args) > 1 && os.Args[1] == "stats" {
 		_ = db.InitDB()
@@ -96,7 +110,7 @@ func main() {
 
 	wordlistPath := flag.String("wordlist", "", "Path to custom wordlist text file (must contain at least 50 words)")
 
-	themeName := flag.String("theme", "amber", "Set UI theme (amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, matrix, gruvbox)")
+	themeName := flag.String("theme", "amber", "Set UI theme (amber, jewel, sunset, forest, neon, vintage, mono, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, matrix, gruvbox)")
 	flag.StringVar(themeName, "t", "amber", "Set UI theme (shorthand)")
 
 	tomlThemePath := flag.String("config-theme", "", "Path to custom theme file")

@@ -1,0 +1,12 @@
+{
+  "name": "sunset",
+  "background": "#1E0F24",
+  "primary": "#FF7F50",
+  "secondary": "#FFA07A",
+  "success": "#FF6347",
+  "error": "#E63946",
+  "dim": "#5C3A6B",
+  "subtle": "#E2B6CF",
+  "highlight": "#DA70D6",
+  "ghost_cursor": "#3B1E47"
+}

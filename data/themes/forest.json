@@ -1,0 +1,12 @@
+{
+  "name": "forest",
+  "background": "#1B261D",
+  "primary": "#8FBC8F",
+  "secondary": "#EEDC82",
+  "success": "#708090",
+  "error": "#D9534F",
+  "dim": "#3A4F3D",
+  "subtle": "#C2D4C3",
+  "highlight": "#F5F5DC",
+  "ghost_cursor": "#28382A"
+}

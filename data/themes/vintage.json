@@ -1,0 +1,12 @@
+{
+  "name": "vintage",
+  "background": "#21252B",
+  "primary": "#E5C07B",
+  "secondary": "#D19A66",
+  "success": "#98C379",
+  "error": "#E06C75",
+  "dim": "#4B5263",
+  "subtle": "#ABB2BF",
+  "highlight": "#F0E6D2",
+  "ghost_cursor": "#2C313A"
+}

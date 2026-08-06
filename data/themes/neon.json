@@ -1,0 +1,12 @@
+{
+  "name": "neon",
+  "background": "#000000",
+  "primary": "#00F5FF",
+  "secondary": "#FFE600",
+  "success": "#39FF14",
+  "error": "#FF007F",
+  "dim": "#333333",
+  "subtle": "#CCCCCC",
+  "highlight": "#FF007F",
+  "ghost_cursor": "#222222"
+}

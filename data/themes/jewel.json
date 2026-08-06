@@ -1,0 +1,12 @@
+{
+  "name": "jewel",
+  "background": "#0A0915",
+  "primary": "#50C878",
+  "secondary": "#FFD700",
+  "success": "#0F52BA",
+  "error": "#E0115F",
+  "dim": "#3A2E56",
+  "subtle": "#B39DDB",
+  "highlight": "#FFD700",
+  "ghost_cursor": "#281E3D"
+}

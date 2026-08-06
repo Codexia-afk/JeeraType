@@ -119,8 +119,10 @@ jeeratype --death -d          # Single typo immediately resets test session
 jeeratype --stop-on-error -soe# Forces error correction before advancing
 jeeratype --ghost 80 -g 80    # Set Target Ghost Pacer to 80 WPM
 
-# 🎨 Customization & Audio
-jeeratype --theme cyberpunk -t cyberpunk # Options: amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, gruvbox, matrix
+# 🎨 Customization & Theme Preview
+jeeratype theme list          # Display color swatches for all 18 themes
+jeeratype theme preview jewel # Render live UI preview for a specific theme
+jeeratype --theme jewel -t jewel # Options: jewel, sunset, forest, neon, vintage, mono, amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, gruvbox, matrix
 jeeratype --sound            # Enable terminal bell / audio click feedback
 jeeratype --showkeys -sk      # Enable live visual QWERTY keyboard overlay at bottom
 

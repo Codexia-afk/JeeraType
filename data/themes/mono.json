@@ -1,0 +1,12 @@
+{
+  "name": "mono",
+  "background": "#101010",
+  "primary": "#FFFFFF",
+  "secondary": "#FFD700",
+  "success": "#CCCCCC",
+  "error": "#FF3333",
+  "dim": "#444444",
+  "subtle": "#888888",
+  "highlight": "#FFD700",
+  "ghost_cursor": "#222222"
+}

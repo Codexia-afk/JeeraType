@@ -44,10 +44,18 @@ Welcome to JeeraType v2.0.0! This release introduces powerful new practice modes
 - **Replay & race**: Save a past typing run to a file and re-type the passage to race live against your own past performance.
   *Command / Key:* Run `jeeratype export-replay` and `jeeratype race replay.json`.
 
-### Customization
+### Customization & Theme System
 
-- **Color themes**: Choose from vibrant built-in color themes like Dracula, Nord, Solarized, Amber, Catppuccin, Gruvbox, and Matrix.
-  *Command / Key:* Press `t` on the main menu or run `jeeratype --theme dracula`.
+- **6 New Premium Themes**:
+  - `jewel` — deep saturated emerald, sapphire, ruby, and gold on a near-black background
+  - `sunset` — warm coral, tangerine, and magenta on a deep plum background
+  - `forest` — muted earthy moss green, bark brown, and cream text for low-contrast relaxed typing
+  - `neon` — ultra-saturated electric cyan, hot pink, and acid green on pure black
+  - `vintage` — desaturated mustard, rust, sage, and paper cream retro print poster palette
+  - `mono` — high-contrast stark white, gold, and crimson two-tone for minimal distraction
+- **Theme Preview Commands**:
+  - `jeeratype theme list` displays color swatches `██` for all 18 registered themes.
+  - `jeeratype theme preview <name>` renders a live UI preview box for any theme before applying it.
 
 - **Optional sound feedback**: Hear a subtle audio click or bell sound every time you press a key or make a typo.
   *Command / Key:* Run `jeeratype --sound`.
