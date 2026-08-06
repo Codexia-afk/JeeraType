@@ -8,7 +8,7 @@ import (
 func TestGenerateText(t *testing.T) {
 	durations := []int{15, 30, 45, 60, 120}
 	for _, d := range durations {
-		text := GenerateText(d)
+		text := GenerateText(d, false, false)
 		if len(text) == 0 {
 			t.Errorf("expected non-empty text for duration %ds", d)
 		}

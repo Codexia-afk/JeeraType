@@ -21,6 +21,14 @@ type Model struct {
 	currentMode     ui.TestMode
 	currentTheme    config.Theme
 	ghostWPM        float64
+	punctuation     bool
+	numbers         bool
+	isZen           bool
+	codeLang        string
+	profile         string
+	sound           bool
+	countdownCount  int // 3...2...1...0 (0 = start input)
+	wordlistPath    string
 	showKeys        bool
 	stopOnError     bool
 	suddenDeath     bool
@@ -43,6 +51,13 @@ func NewModel() *Model {
 		currentMode:     ui.ModeParagraphs,
 		currentTheme:    config.ThemeAmber,
 		ghostWPM:        0,
+		punctuation:     false,
+		numbers:         false,
+		isZen:           false,
+		codeLang:        "go",
+		profile:         "default",
+		sound:           false,
+		countdownCount:  0,
 		showKeys:        false,
 		stopOnError:     false,
 		suddenDeath:     false,
@@ -61,6 +76,34 @@ func (m *Model) SetCustomTheme(theme config.Theme) {
 
 func (m *Model) SetGhostWPM(wpm float64) {
 	m.ghostWPM = wpm
+}
+
+func (m *Model) SetPunctuation(punc bool) {
+	m.punctuation = punc
+}
+
+func (m *Model) SetNumbers(num bool) {
+	m.numbers = num
+}
+
+func (m *Model) SetZen(zen bool) {
+	m.isZen = zen
+}
+
+func (m *Model) SetCodeLang(lang string) {
+	m.codeLang = lang
+}
+
+func (m *Model) SetProfile(prof string) {
+	m.profile = prof
+}
+
+func (m *Model) SetSound(snd bool) {
+	m.sound = snd
+}
+
+func (m *Model) SetWordlistPath(path string) {
+	m.wordlistPath = path
 }
 
 func (m *Model) SetShowKeys(show bool) {
@@ -106,51 +149,78 @@ func (m *Model) Init() tea.Cmd {
 // StartTest initializes a new typing test session.
 func (m *Model) StartTest() {
 	duration := m.timeModes[m.selectedModeIdx]
+	if m.isZen {
+		duration = 0
+	}
 	var targetText string
 
-	switch m.currentMode {
-	case ui.ModeCode:
-		targetText = generator.GenerateCodeText(duration)
-	case ui.ModeAdaptive:
-		weakKeys := db.GetTopWeakKeys(5)
-		weakBigrams := db.GetTopSlowestBigrams(5)
-		targetText = generator.GenerateAdaptiveText(weakKeys, weakBigrams, duration)
-	case ui.ModeQuotes:
-		targetText = generator.GenerateQuoteText()
-	case ui.ModeStdin:
-		if m.stdinText != "" {
-			targetText = m.stdinText
+	if m.wordlistPath != "" {
+		customText, err := generator.LoadCustomWordlist(m.wordlistPath, duration)
+		if err == nil && len(customText) > 0 {
+			targetText = customText
 		} else {
-			targetText = generator.GenerateText(duration)
+			targetText = generator.GenerateText(duration, m.punctuation, m.numbers)
 		}
-	case ui.ModeFile:
-		if m.filePath != "" {
-			content, err := os.ReadFile(m.filePath)
-			if err == nil && len(content) > 0 {
-				fullText := string(content)
-				if m.fileOffset < len(fullText) {
-					targetText = fullText[m.fileOffset:]
+	} else {
+		switch m.currentMode {
+		case ui.ModeCode:
+			targetText = generator.GenerateLanguageCodeText(m.codeLang, duration)
+		case ui.ModeAdaptive:
+			weakKeys := db.GetTopWeakKeys(5)
+			weakBigrams := db.GetTopSlowestBigrams(5)
+			targetText = generator.GenerateAdaptiveText(weakKeys, weakBigrams, duration, m.punctuation, m.numbers)
+		case ui.ModeQuotes:
+			targetText = generator.GenerateQuoteText()
+		case ui.ModeStdin:
+			if m.stdinText != "" {
+				targetText = m.stdinText
+			} else {
+				targetText = generator.GenerateText(duration, m.punctuation, m.numbers)
+			}
+		case ui.ModeFile:
+			if m.filePath != "" {
+				content, err := os.ReadFile(m.filePath)
+				if err == nil && len(content) > 0 {
+					fullText := string(content)
+					if m.fileOffset < len(fullText) {
+						targetText = fullText[m.fileOffset:]
+					} else {
+						targetText = fullText
+						m.fileOffset = 0
+					}
 				} else {
-					targetText = fullText
-					m.fileOffset = 0
+					targetText = generator.GenerateText(duration, m.punctuation, m.numbers)
 				}
 			} else {
-				targetText = generator.GenerateText(duration)
+				targetText = generator.GenerateText(duration, m.punctuation, m.numbers)
 			}
-		} else {
-			targetText = generator.GenerateText(duration)
+		default:
+			targetText = generator.GenerateText(duration, m.punctuation, m.numbers)
 		}
-	default:
-		targetText = generator.GenerateText(duration)
 	}
 
-	m.tracker = stats.NewTracker(targetText, duration, m.ghostWPM, m.stopOnError, m.suddenDeath)
+	m.tracker = stats.NewTracker(targetText, duration, m.ghostWPM, m.stopOnError, m.suddenDeath, m.isZen)
 
-	// Fetch PB Ghost sample history from SQLite
-	modeKey := fmt.Sprintf("%s_%ds", m.currentMode.String(), duration)
+	// Combo key for Personal Best checking
+	puncStr := "no_punc"
+	if m.punctuation {
+		puncStr = "punc"
+	}
+	numStr := "no_num"
+	if m.numbers {
+		numStr = "num"
+	}
+	modeKey := fmt.Sprintf("%s_%ds_%s_%s", m.currentMode.String(), duration, puncStr, numStr)
 	pbWPM, pbSamples := db.GetPBRace(modeKey)
+	m.tracker.PreviousPBWPM = pbWPM
 	m.tracker.PBWPM = pbWPM
 	m.tracker.PBSamples = pbSamples
+
+	if !m.isZen {
+		m.countdownCount = 3
+	} else {
+		m.countdownCount = 0
+	}
 
 	m.state = StateTest
 	m.historySaved = false
@@ -173,7 +243,12 @@ func (m *Model) FinishTest() {
 		consistency := m.tracker.CalculateConsistency()
 		duration := m.tracker.DurationSec
 
-		// Save JSONL record
+		// Check if new Personal Best
+		if netWPM > m.tracker.PreviousPBWPM && netWPM > 0 {
+			m.tracker.IsNewPB = true
+		}
+
+		// Save JSONL record with Profile scope
 		rec := storage.HistoryRecord{
 			Timestamp:    m.tracker.EndTime,
 			DurationSec:  duration,
@@ -184,6 +259,7 @@ func (m *Model) FinishTest() {
 			TotalChars:   m.tracker.CursorIdx,
 			CorrectChars: m.tracker.CountCorrectChars(),
 			ErrorCount:   m.tracker.ErrorKeystrokes,
+			Profile:      m.profile,
 		}
 		_ = storage.SaveRecord(rec)
 
@@ -191,8 +267,16 @@ func (m *Model) FinishTest() {
 		modeStr := m.currentMode.String()
 		_ = db.SaveTestRun(modeStr, netWPM, grossWPM, acc, consistency, duration)
 
-		// Save PB Race Keyframes
-		modeKey := fmt.Sprintf("%s_%ds", modeStr, duration)
+		// Save PB Race Keyframes if new PB
+		puncStr := "no_punc"
+		if m.punctuation {
+			puncStr = "punc"
+		}
+		numStr := "no_num"
+		if m.numbers {
+			numStr = "num"
+		}
+		modeKey := fmt.Sprintf("%s_%ds_%s_%s", modeStr, duration, puncStr, numStr)
 		_ = db.SavePBRace(modeKey, netWPM, m.tracker.WPMSamples)
 
 		// Save File Offset Progress
@@ -219,7 +303,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, CmdTick100ms()
 
 	case Tick250msMsg:
-		if m.state == StateTest && m.tracker != nil && m.tracker.IsStarted && !m.tracker.IsFinished {
+		if m.state == StateTest && m.tracker != nil && m.tracker.IsStarted && !m.tracker.IsFinished && !m.isZen {
 			if m.tracker.RemainingSeconds() <= 0 {
 				m.FinishTest()
 			}
@@ -227,8 +311,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, CmdTick250ms()
 
 	case Tick1sMsg:
-		if m.state == StateTest && m.tracker != nil && m.tracker.IsStarted && !m.tracker.IsFinished {
-			m.tracker.SampleWPM()
+		if m.state == StateTest {
+			if m.countdownCount > 0 {
+				m.countdownCount--
+			} else if m.tracker != nil && m.tracker.IsStarted && !m.tracker.IsFinished {
+				m.tracker.SampleWPM()
+			}
 		}
 		return m, CmdTick1s()
 
@@ -272,6 +360,12 @@ func (m *Model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.selectedModeIdx = 3
 	case "5":
 		m.selectedModeIdx = 4
+	case "p":
+		m.punctuation = !m.punctuation
+	case "n":
+		m.numbers = !m.numbers
+	case "z":
+		m.isZen = !m.isZen
 	case "m":
 		switch m.currentMode {
 		case ui.ModeParagraphs:
@@ -319,11 +413,23 @@ func (m *Model) updateMenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m *Model) updateTest(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "esc":
-		m.state = StateMenu
+		if m.isZen || (m.tracker != nil && m.tracker.IsStarted) {
+			m.FinishTest()
+		} else {
+			m.state = StateMenu
+		}
 		return m, nil
-	case "tab":
+	case "tab", "ctrl+r":
 		m.StartTest()
 		return m, nil
+	}
+
+	// Block text input during 3..2..1.. countdown
+	if m.countdownCount > 0 {
+		return m, nil
+	}
+
+	switch msg.String() {
 	case "backspace":
 		m.tracker.Backspace()
 		return m, nil
@@ -341,8 +447,21 @@ func (m *Model) updateTest(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if len(runes) > 0 {
 		m.lastPressedRune = runes[0]
 		for _, r := range runes {
+			currCursor := m.tracker.CursorIdx
 			m.tracker.RecordRune(r)
-			if m.tracker.IsFinished {
+
+			// Sound feedback on error or keypress
+			if m.sound {
+				fmt.Print("\a")
+			}
+
+			// Death Mode: any typo resets test immediately
+			if m.suddenDeath && m.tracker.CursorIdx <= currCursor && m.tracker.ErrorKeystrokes > 0 {
+				m.StartTest()
+				return m, nil
+			}
+
+			if m.tracker.IsFinished && !m.isZen {
 				m.FinishTest()
 				break
 			}
@@ -350,7 +469,10 @@ func (m *Model) updateTest(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	} else if msg.String() == "space" {
 		m.lastPressedRune = ' '
 		m.tracker.RecordRune(' ')
-		if m.tracker.IsFinished {
+		if m.sound {
+			fmt.Print("\a")
+		}
+		if m.tracker.IsFinished && !m.isZen {
 			m.FinishTest()
 		}
 	}
@@ -384,8 +506,11 @@ func (m *Model) updateHeatmap(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	switch m.state {
 	case StateMenu:
-		return ui.RenderMenuView(m.timeModes, m.selectedModeIdx, m.currentMode, m.currentTheme, m.ghostWPM, m.showKeys, m.width)
+		return ui.RenderMenuView(m.timeModes, m.selectedModeIdx, m.currentMode, m.currentTheme, m.ghostWPM, m.showKeys, m.punctuation, m.numbers, m.isZen, m.width)
 	case StateTest:
+		if m.countdownCount > 0 {
+			return ui.RenderCountdownView(m.countdownCount, m.currentTheme, m.width)
+		}
 		return ui.RenderTestView(m.tracker, m.currentTheme, m.showKeys, m.lastPressedRune, m.width)
 	case StateResults:
 		return ui.RenderResultsView(m.tracker, m.currentTheme, m.width)

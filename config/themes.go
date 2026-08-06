@@ -73,6 +73,19 @@ var (
 		GhostCursor: lipgloss.Color("#44475A"),
 	}
 
+	ThemeSolarized = Theme{
+		Name:        "solarized",
+		Primary:     lipgloss.Color("#268BD2"), // Blue
+		Secondary:   lipgloss.Color("#B58900"), // Yellow
+		Success:     lipgloss.Color("#859900"), // Green
+		Error:       lipgloss.Color("#DC322F"), // Red
+		Dim:         lipgloss.Color("#586E75"), // Base01
+		Subtle:      lipgloss.Color("#93A1A1"), // Base1
+		Background:  lipgloss.Color("#002B36"), // Base03
+		Highlight:   lipgloss.Color("#2AA198"), // Cyan
+		GhostCursor: lipgloss.Color("#073642"),
+	}
+
 	ThemeMatrix = Theme{
 		Name:        "matrix",
 		Primary:     lipgloss.Color("#00FF66"), // Bright Neon Green
@@ -101,17 +114,21 @@ var (
 
 	AvailableThemes = []Theme{
 		ThemeAmber,
-		ThemeCatppuccin,
-		ThemeNord,
 		ThemeDracula,
-		ThemeMatrix,
+		ThemeNord,
+		ThemeSolarized,
+		ThemeCatppuccin,
 		ThemeGruvbox,
+		ThemeMatrix,
 	}
 )
 
 // GetThemeByName returns matching Theme or default Amber.
 func GetThemeByName(name string) Theme {
 	n := strings.ToLower(strings.TrimSpace(name))
+	if n == "default" {
+		n = "amber"
+	}
 	for _, t := range AvailableThemes {
 		if t.Name == n {
 			return t

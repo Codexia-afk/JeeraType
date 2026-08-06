@@ -38,9 +38,12 @@ type Tracker struct {
 	BackspaceCount     int
 	WPMSamples         []float64
 	DurationSec        int
+	IsZen              bool    // Zen Mode (infinite, no timer)
 	TargetWPM          float64 // Ghost Pacer Target (0 = disabled)
 	GhostCursorIdx     int     // Position of Ghost Pacer
 	PBWPM              float64 // Personal Best WPM
+	PreviousPBWPM      float64 // Previously stored PB WPM
+	IsNewPB            bool    // Set to true if current run beat previous PB
 	PBSamples          []float64
 	PBGhostCursorIdx   int  // Position of Personal Best Ghost
 	StopOnError        bool // Stop-on-Error mode
@@ -50,7 +53,7 @@ type Tracker struct {
 }
 
 // NewTracker creates a new typing tracker.
-func NewTracker(targetText string, durationSec int, targetWPM float64, stopOnError bool, suddenDeath bool) *Tracker {
+func NewTracker(targetText string, durationSec int, targetWPM float64, stopOnError bool, suddenDeath bool, isZen bool) *Tracker {
 	runes := []rune(targetText)
 	states := make([]CharStatus, len(runes))
 	for i := range states {
@@ -62,6 +65,7 @@ func NewTracker(targetText string, durationSec int, targetWPM float64, stopOnErr
 		CharStates:         states,
 		CursorIdx:          0,
 		DurationSec:        durationSec,
+		IsZen:              isZen,
 		TargetWPM:          targetWPM,
 		StopOnError:        stopOnError,
 		SuddenDeath:        suddenDeath,
@@ -144,7 +148,9 @@ func (t *Tracker) RecordRune(r rune) {
 
 	t.CursorIdx++
 	if t.CursorIdx >= len(t.TargetRunes) {
-		t.Finish()
+		if !t.IsZen {
+			t.Finish()
+		}
 	}
 }
 
@@ -207,6 +213,9 @@ func (t *Tracker) ElapsedSeconds() float64 {
 
 // RemainingSeconds returns countdown timer seconds left.
 func (t *Tracker) RemainingSeconds() int {
+	if t.IsZen {
+		return 0
+	}
 	if !t.IsStarted {
 		return t.DurationSec
 	}

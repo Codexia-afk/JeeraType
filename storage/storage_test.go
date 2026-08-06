@@ -7,11 +7,8 @@ import (
 )
 
 func TestStorageSaveAndLoad(t *testing.T) {
-	tmpFile, err := os.CreateTemp("", "jeeratype_history_*.jsonl")
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer os.Remove(tmpFile.Name())
+	tmpDir := t.TempDir()
+	os.Setenv("HOME", tmpDir)
 
 	rec := HistoryRecord{
 		Timestamp:    time.Now().Truncate(time.Second),
@@ -23,6 +20,7 @@ func TestStorageSaveAndLoad(t *testing.T) {
 		TotalChars:   250,
 		CorrectChars: 245,
 		ErrorCount:   5,
+		Profile:      "default",
 	}
 
 	path, err := GetHistoryFilePath()

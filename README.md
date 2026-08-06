@@ -1,36 +1,36 @@
-# JeeraType (`jeeratype`)
+# JeeraType (`jeeratype`) v2.0.0
 
 JeeraType is a 100% offline, cross-platform terminal-based typing speed tester written in Go using Charm's Bubble Tea and Lipgloss libraries.
 
 ```text
-     ___                     _____                 
-    |_  |                   |_   _|                
-      | | ___  ___ _ __ __ _  | |   _   _ _ __   ___ 
-      | |/ _ \/ _ \ '__/ _` || |  | |_| | | '_ \ / _ \
-  /\__/ /  __/  __/ | | (_| || |  |  _  | |_) |  __/
-  \____/ \___|\___|_|  \__,_||_|   \__, | .__/ \___|
-                                   __/ | |          
-                                  |___/|_|          
-  [ The Offline Terminal Typing Tester ]
+     _                _____                 
+    | | ___  ___ _ __/ /_ /___ _   _  ___   
+ _  | |/ _ \/ _ \ '__/ /_ / __| | | |/ _ \  
+| |_| |  __/  __/ | / / / (__| |_| |  __/  
+ \___/ \___|\___|_|/_/  \___|\__, |\___|   
+                              |___/        
+   [ terminal typing speed test — 100% offline ]
 ```
 
 ---
 
-## Key Features
+## Key Features in v2.0.0
 
-- **100% Offline & Single Binary**: Uses Go's native `//go:embed` for paragraphs, quotes, and code datasets. Zero runtime network calls.
-- **Pure Go SQLite Engine**: Uses `modernc.org/sqlite` (zero CGO/GCC requirement) to persist completed test runs, key transition latencies, and file reading progress offsets in `~/.config/jeeratype/stats.db`.
-- **UNIX STDIN & Pipe Support**: Accepts text via standard input (e.g. `cat file.txt | jeeratype`).
-- **File Reader with Auto-Resume**: Opening a text file (`jeeratype /path/to/book.txt`) saves cursor progress in SQLite and automatically resumes where you left off.
-- **Industrial Math Engine**: Computes Gross WPM `((total_keystrokes/5) / elapsed_minutes)`, Net WPM, Accuracy %, and WPM consistency.
-- **Adaptive Weakness Engine**: Measures millisecond latency between key transitions (bigrams) and error rates, generating custom drill passages targeting your weakest keys.
-- **Ghost Pacers & PB Replay**: Includes Target Ghost Pacer (60, 80, 100, 120 WPM) and Personal Best (PB) Ghost Replay `🏆` stored in SQLite.
-- **Hardcore Modes**:
-  - `--stop-on-error` / `-soe`: Forces error correction before advancing.
-  - `--sudden-death` / `-sd`: Single typo ends the test immediately.
-- **Visual Keyboard Overlay (`-showkeys` / `-sk`)**: Displays a live QWERTY keyboard at the bottom of the screen highlighting key presses in real-time.
-- **Scriptable UNIX Exporters (`-csv` / `-json`)**: Outputs historical typing data directly in structured CSV or JSON for shell scripts and spreadsheets.
-- **Color Themes & TOML Loader**: Built-in themes (`Amber`, `Catppuccin`, `Nord`, `Dracula`, `Matrix`, `Gruvbox`) plus custom `.toml` theme loading (`--config-theme`).
+- **100% Offline & Pure Go**: Zero CGO dependencies (`modernc.org/sqlite`). All paragraphs, quotes, themes, and code snippets are embedded via `go:embed`.
+- **Punctuation & Numbers Toggles (`--punctuation`, `--numbers`)**: Injects capitalization, punctuation (`.`, `,`, `?`, `;`), and numbers (`0`-`9`) into text streams. Menu toggles `p` and `n`.
+- **Zen Mode (`--zen`)**: Infinite typing stream with no timer or word limit until `Esc` is pressed.
+- **Countdown Before Start**: Centered `3…2…1…` countdown animation before input begins.
+- **Persistent Runtime Footer**: Persistent hints bar (`Tab: restart   Esc: quit   Ctrl+C: force quit`) at the bottom of the active screen.
+- **Personal Best (PB) Tracking**: Automatically tracks PB scores per mode/duration/punctuation/numbers combo and displays `🎉 NEW BEST!` banners.
+- **Session History Subcommand (`jeeratype stats`)**: Formatted table of the last 20 runs with performance trend indicators (`↑` / `↓` / `–`).
+- **Streak Counter**: Tracks consecutive calendar days with at least 1 completed test (`🔥 5 day streak`).
+- **Shaded Keyboard Heatmap (`jeeratype stats --heatmap`)**: Renders an ASCII QWERTY keyboard with 5 block shading intensity levels (`░`, `▒`, `▓`, `█`).
+- **Multi-User Leaderboard (`--profile <name>`, `jeeratype stats --leaderboard`)**: Profile-scoped history and leaderboard rankings.
+- **Code Mode Expansion (`--mode code --lang python|js|go`)**: Snippets for Python, JavaScript, and Go.
+- **Death Mode (`--death`)**: Any typo immediately resets the test session.
+- **Custom Word Lists (`--wordlist /path/to/file.txt`)**: Validated custom wordlist loader (requires ≥ 50 words).
+- **Replay Export & Race (`jeeratype export-replay`, `jeeratype race`)**: Export keystroke timelines to JSON and race against past replays.
+- **Themes Engine (`--theme <name>`)**: Themes (`amber`, `dracula`, `nord`, `solarized`, `catppuccin`, `gruvbox`, `matrix`) saved in `~/.config/jeeratype/config.json`.
 
 ---
 
@@ -55,63 +55,42 @@ irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | i
 powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex"
 ```
 
-### ⚡ Go Install (Cross-Platform)
+---
+
+## Usage & Subcommands
+
 ```bash
-go install github.com/Codexia-afk/JeeraType@latest
+# Launch interactive TUI
+jeeratype
+
+# Subcommands
+jeeratype stats               # Session history table (last 20 runs + trend)
+jeeratype stats --heatmap     # Shaded ASCII QWERTY key error heatmap
+jeeratype stats --leaderboard # Local multi-user profile leaderboard
+jeeratype export-replay       # Export keystroke timeline to JSON
+
+# CLI Flags
+jeeratype --punctuation --numbers
+jeeratype --zen
+jeeratype --theme dracula
+jeeratype --mode code --lang python
+jeeratype --death
+jeeratype --profile srinjoy
+jeeratype --wordlist /path/to/mywords.txt
 ```
 
 ---
 
 ## 🗑️ Uninstalling
 
-If you ever wish to remove JeeraType from your machine, run the one-line uninstall command for your operating system:
-
-### 🍎 macOS & 🐧 Linux (One-Line Uninstall)
+### 🍎 macOS & 🐧 Linux
 ```bash
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sh
 ```
-*Or if installed with `sudo`:*
-```bash
-curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sudo sh
-```
 
-### 🪟 Windows (PowerShell & Command Prompt)
-In **PowerShell**, run:
+### 🪟 Windows
 ```powershell
 irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex
-```
-*Or in Command Prompt (`cmd.exe`):*
-```cmd
-powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex"
-```
-
----
-
-## Usage & CLI Flags
-
-```bash
-# Launch interactive TUI
-jeeratype
-
-# Pipe UNIX text into JeeraType
-cat essay.txt | jeeratype
-
-# Open file with auto-resume progress offset
-jeeratype /path/to/book.txt
-
-# Hardcore Modes
-jeeratype --stop-on-error
-jeeratype --sudden-death
-
-# Visual Keyboard Overlay & Custom Theme
-jeeratype --showkeys --theme catppuccin --ghost 80
-
-# Output Keyboard Heatmap
-jeeratype --stats
-
-# Export UNIX CSV / JSON data
-jeeratype --csv
-jeeratype --json
 ```
 
 ---

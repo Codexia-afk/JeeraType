@@ -19,10 +19,10 @@ type HistoryRecord struct {
 	TotalChars   int       `json:"total_chars"`
 	CorrectChars int       `json:"correct_chars"`
 	ErrorCount   int       `json:"error_count"`
+	Profile      string    `json:"profile,omitempty"`
 }
 
 // GetHistoryFilePath resolves standard OS user config directory ~/.config/jeeratype/history.jsonl
-// with fallback to working directory / temp dir if permissions are restricted.
 func GetHistoryFilePath() (string, error) {
 	configDir, err := os.UserConfigDir()
 	if err == nil {
@@ -32,7 +32,6 @@ func GetHistoryFilePath() (string, error) {
 		}
 	}
 
-	// Fallback 1: ~/.config/jeeratype
 	if home := os.Getenv("HOME"); home != "" {
 		appDir := filepath.Join(home, ".config", "jeeratype")
 		if err := os.MkdirAll(appDir, 0755); err == nil {
@@ -40,7 +39,6 @@ func GetHistoryFilePath() (string, error) {
 		}
 	}
 
-	// Fallback 2: Local temp dir
 	appDir := filepath.Join(os.TempDir(), "jeeratype")
 	_ = os.MkdirAll(appDir, 0755)
 	return filepath.Join(appDir, "history.jsonl"), nil
@@ -93,6 +91,9 @@ func LoadHistory() ([]HistoryRecord, error) {
 		}
 		var rec HistoryRecord
 		if err := json.Unmarshal(line, &rec); err == nil {
+			if rec.Profile == "" {
+				rec.Profile = "default"
+			}
 			records = append(records, rec)
 		}
 	}

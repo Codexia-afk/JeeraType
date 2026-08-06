@@ -9,22 +9,97 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/term"
+	"github.com/Codexia-afk/JeeraType/cmd"
 	"github.com/Codexia-afk/JeeraType/config"
 	"github.com/Codexia-afk/JeeraType/db"
 	"github.com/Codexia-afk/JeeraType/engine"
 	"github.com/Codexia-afk/JeeraType/export"
+	"github.com/Codexia-afk/JeeraType/generator"
 	"github.com/Codexia-afk/JeeraType/storage"
 	"github.com/Codexia-afk/JeeraType/ui"
 )
 
 func main() {
+	// Subcommand: `jeeratype stats` (--heatmap, --leaderboard)
+	if len(os.Args) > 1 && os.Args[1] == "stats" {
+		_ = db.InitDB()
+		defer db.CloseDB()
+
+		themeFlag := "amber"
+		showHeatmap := false
+		showLeaderboard := false
+
+		for i, arg := range os.Args {
+			if (arg == "--theme" || arg == "-t") && i+1 < len(os.Args) {
+				themeFlag = os.Args[i+1]
+			}
+			if arg == "--heatmap" {
+				showHeatmap = true
+			}
+			if arg == "--leaderboard" {
+				showLeaderboard = true
+			}
+		}
+		cmd.RunStatsSubcommand(themeFlag, showHeatmap, showLeaderboard)
+		os.Exit(0)
+	}
+
+	// Subcommand: `jeeratype export-replay <run-id>`
+	if len(os.Args) > 1 && os.Args[1] == "export-replay" {
+		targetPath := ""
+		if len(os.Args) > 2 {
+			targetPath = os.Args[2]
+		}
+		if err := engine.ExportReplay(targetPath); err != nil {
+			fmt.Fprintf(os.Stderr, "Error exporting replay: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("✅ Replay exported successfully!")
+		os.Exit(0)
+	}
+
+	// Subcommand: `jeeratype race replay.json`
+	if len(os.Args) > 1 && os.Args[1] == "race" {
+		if len(os.Args) < 3 {
+			fmt.Fprintf(os.Stderr, "Usage: jeeratype race <replay.json>\n")
+			os.Exit(1)
+		}
+		replay, err := engine.LoadReplay(os.Args[2])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error loading replay: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("🏎️  Racing against recorded replay (WPM: %.1f)...\n", replay.WPM)
+		os.Exit(0)
+	}
+
 	showStats := flag.Bool("stats", false, "Render ASCII Keyboard Heatmap & historical stats in terminal")
 	flag.BoolVar(showStats, "s", false, "Render ASCII Keyboard Heatmap (shorthand)")
 
-	themeName := flag.String("theme", "amber", "Set UI theme (amber, catppuccin, nord, dracula, matrix, gruvbox)")
+	punctuation := flag.Bool("punctuation", false, "Inject punctuation into generated text stream")
+	flag.BoolVar(punctuation, "p", false, "Inject punctuation (shorthand)")
+
+	numbers := flag.Bool("numbers", false, "Inject numbers into generated text stream")
+	flag.BoolVar(numbers, "n", false, "Inject numbers (shorthand)")
+
+	isZen := flag.Bool("zen", false, "Enable Zen mode (infinite typing stream, no timer)")
+	flag.BoolVar(isZen, "z", false, "Enable Zen mode (shorthand)")
+
+	codeLang := flag.String("lang", "go", "Set programming language for Code mode (python, js, go)")
+
+	deathMode := flag.Bool("death", false, "Enable Death mode (typo resets test immediately)")
+	flag.BoolVar(deathMode, "d", false, "Enable Death mode (shorthand)")
+
+	profile := flag.String("profile", "default", "Scope stats/history to a local user profile")
+
+	sound := flag.Bool("sound", false, "Enable audio/terminal bell feedback on keypress/error")
+
+	wordlistPath := flag.String("wordlist", "", "Path to custom wordlist text file (must contain at least 50 words)")
+
+	themeName := flag.String("theme", "amber", "Set UI theme (amber, dracula, nord, solarized, catppuccin, matrix, gruvbox)")
 	flag.StringVar(themeName, "t", "amber", "Set UI theme (shorthand)")
 
-	tomlThemePath := flag.String("config-theme", "", "Path to custom .toml theme file")
+	tomlThemePath := flag.String("config-theme", "", "Path to custom theme file")
 
 	ghostWPM := flag.Float64("ghost", 0, "Set Ghost Pacer target WPM (e.g. 60, 80, 100)")
 	flag.Float64Var(ghostWPM, "g", 0, "Set Ghost Pacer target WPM (shorthand)")
@@ -81,6 +156,21 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Validate Custom Wordlist if specified
+	if *wordlistPath != "" {
+		_, err := generator.LoadCustomWordlist(*wordlistPath, 30)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
+	// Load JSON app configuration
+	appCfg := config.LoadConfig()
+	if *themeName == "amber" && appCfg.Theme != "" {
+		*themeName = appCfg.Theme
+	}
+
 	model := engine.NewModel()
 	model.SetTheme(*themeName)
 	if *tomlThemePath != "" {
@@ -92,9 +182,22 @@ func main() {
 	if *ghostWPM > 0 {
 		model.SetGhostWPM(*ghostWPM)
 	}
+	model.SetPunctuation(*punctuation)
+	model.SetNumbers(*numbers)
+	model.SetZen(*isZen)
+	model.SetCodeLang(*codeLang)
+	model.SetProfile(*profile)
+	model.SetSound(*sound)
+
+	if *wordlistPath != "" {
+		model.SetWordlistPath(*wordlistPath)
+	}
 	model.SetShowKeys(*showKeys)
 	model.SetStopOnError(*stopOnError)
-	model.SetSuddenDeath(*suddenDeath)
+
+	if *deathMode || *suddenDeath {
+		model.SetSuddenDeath(true)
+	}
 
 	if *quotesMode {
 		model.SetMode(ui.ModeQuotes)
@@ -111,6 +214,14 @@ func main() {
 			model.SetMode(ui.ModeParagraphs)
 		}
 	}
+
+	// Save active settings to config.json
+	appCfg.Theme = *themeName
+	appCfg.Punctuation = *punctuation
+	appCfg.Numbers = *numbers
+	appCfg.Sound = *sound
+	appCfg.DefaultProfile = *profile
+	_ = config.SaveConfig(appCfg)
 
 	// Check STDIN Pipe Input (e.g. cat file.txt | jeeratype)
 	if !term.IsTerminal(int(os.Stdin.Fd())) {

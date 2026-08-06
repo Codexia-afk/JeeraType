@@ -7,7 +7,7 @@ import (
 
 func TestTrackerMath(t *testing.T) {
 	text := "The quick brown fox jumps over the lazy dog and types very fast"
-	tracker := NewTracker(text, 15, 0)
+	tracker := NewTracker(text, 15, 0, false, false, false)
 
 	if tracker.RemainingSeconds() != 15 {
 		t.Errorf("expected 15 remaining seconds, got %d", tracker.RemainingSeconds())

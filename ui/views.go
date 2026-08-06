@@ -8,6 +8,7 @@ import (
 	"github.com/guptarohit/asciigraph"
 	"github.com/Codexia-afk/JeeraType/config"
 	"github.com/Codexia-afk/JeeraType/stats"
+	"github.com/Codexia-afk/JeeraType/storage"
 )
 
 type TestMode int
@@ -40,6 +41,35 @@ func (m TestMode) String() string {
 	}
 }
 
+// RenderKeyboardHeatmap renders Keyboard Heatmap screen.
+func RenderKeyboardHeatmap(theme config.Theme, termWidth int) string {
+	return RenderShadedKeyboardHeatmap(theme, termWidth)
+}
+
+// RenderCountdownView renders centered 3...2...1... countdown animation.
+func RenderCountdownView(count int, theme config.Theme, termWidth int) string {
+	var b strings.Builder
+	b.WriteString(RenderLogo(theme))
+	b.WriteString("\n\n\n")
+
+	bigNumStyle := lipgloss.NewStyle().
+		Foreground(theme.Primary).
+		Bold(true).
+		Padding(1, 4).
+		Border(lipgloss.DoubleBorder()).
+		BorderForeground(theme.Secondary)
+
+	b.WriteString(bigNumStyle.Render(fmt.Sprintf("   %d   ", count)))
+	b.WriteString("\n\n")
+	b.WriteString(lipgloss.NewStyle().Foreground(theme.Subtle).Italic(true).Render("Get ready to type..."))
+
+	content := b.String()
+	if termWidth > 0 {
+		return lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, content)
+	}
+	return content
+}
+
 // RenderMenuView renders initial options.
 func RenderMenuView(
 	timeModes []int,
@@ -48,6 +78,9 @@ func RenderMenuView(
 	currentTheme config.Theme,
 	ghostWPM float64,
 	showKeys bool,
+	punctuation bool,
+	numbers bool,
+	isZen bool,
 	termWidth int,
 ) string {
 	s := NewDynamicStyles(currentTheme)
@@ -73,39 +106,49 @@ func RenderMenuView(
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, modePills...))
 	b.WriteString("\n\n")
 
-	// Duration Selector Pills
-	b.WriteString(s.StyleSubtext.Render("Test Duration:"))
-	b.WriteString("\n")
-	var pills []string
-	for i, duration := range timeModes {
-		label := fmt.Sprintf("%ds", duration)
-		if i == selectedModeIdx {
-			pills = append(pills, s.StyleActive.Render(" > "+label+" < "))
-		} else {
-			pills = append(pills, s.StyleInactive.Render("   "+label+"   "))
+	// Duration Selector Pills (or Zen mode indicator)
+	if !isZen {
+		b.WriteString(s.StyleSubtext.Render("Test Duration:"))
+		b.WriteString("\n")
+		var pills []string
+		for i, duration := range timeModes {
+			label := fmt.Sprintf("%ds", duration)
+			if i == selectedModeIdx {
+				pills = append(pills, s.StyleActive.Render(" > "+label+" < "))
+			} else {
+				pills = append(pills, s.StyleInactive.Render("   "+label+"   "))
+			}
 		}
+		b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, pills...))
+	} else {
+		b.WriteString(s.StyleActive.Render(" 🧘 ZEN MODE (Infinite Text Stream) "))
 	}
-	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, pills...))
 	b.WriteString("\n\n")
 
-	// Status Line
+	// Status & Toggles Line
+	puncStr := "OFF"
+	if punctuation {
+		puncStr = "ON"
+	}
+	numStr := "OFF"
+	if numbers {
+		numStr = "ON"
+	}
 	ghostStr := "Disabled"
 	if ghostWPM > 0 {
 		ghostStr = fmt.Sprintf("%.0f WPM 👻", ghostWPM)
 	}
-	keysStr := "OFF"
-	if showKeys {
-		keysStr = "ON"
-	}
-	infoLine := fmt.Sprintf("Theme: [%s]    Ghost Pacer: [%s]    Visual Overlay: [%s]", strings.ToUpper(currentTheme.Name), ghostStr, keysStr)
+
+	infoLine := fmt.Sprintf("Theme: [%s] | Punctuation: [%s] | Numbers: [%s] | Ghost: [%s]",
+		strings.ToUpper(currentTheme.Name), puncStr, numStr, ghostStr)
 	b.WriteString(s.StyleSubtext.Render(infoLine))
 	b.WriteString("\n\n")
 
 	// Controls Guide
 	helpText := "Controls:\n" +
-		"  [m] Toggle Mode (Paragraph/Code/Adaptive/Quotes)  [t] Cycle Theme\n" +
-		"  [g] Toggle Ghost Pacer (Off/60/80/100/120 WPM)   [k] Keyboard Heatmap\n" +
-		"  [v] Toggle Keyboard Overlay (-showkeys)           [Enter / Space] Start Test"
+		"  [p] Toggle Punctuation    [n] Toggle Numbers    [z] Toggle Zen Mode\n" +
+		"  [m] Toggle Typing Mode    [t] Cycle Theme       [g] Ghost Pacer\n" +
+		"  [v] Visual Keyboard       [1-5] Duration        [Enter / Space] Start"
 	b.WriteString(s.StyleHelp.Render(helpText))
 
 	content := b.String()
@@ -121,11 +164,17 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, showKeys bool, activeR
 	var b strings.Builder
 
 	// Header Bar: Time left, Live WPM, Accuracy, Ghost Pacer, Hardcore Mode Badges
-	remSec := t.RemainingSeconds()
 	liveWPM := t.CalculateWPM()
 	liveAcc := t.CalculateAccuracy()
 
-	timeBadge := s.StyleActive.Render(fmt.Sprintf(" ⏱ %ds ", remSec))
+	var timeBadge string
+	if t.IsZen {
+		timeBadge = s.StyleActive.Render(" 🧘 ZEN MODE ")
+	} else {
+		remSec := t.RemainingSeconds()
+		timeBadge = s.StyleActive.Render(fmt.Sprintf(" ⏱ %ds ", remSec))
+	}
+
 	wpmBadge := s.StyleCard.Render(fmt.Sprintf("WPM: %.0f", liveWPM))
 	accBadge := s.StyleCard.Render(fmt.Sprintf("ACC: %.0f%%", liveAcc))
 
@@ -137,14 +186,6 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, showKeys bool, activeR
 	if t.PBWPM > 0 {
 		pbBadge := s.StyleCard.Render(fmt.Sprintf("PB: %.0f WPM 🏆", t.PBWPM))
 		headerItems = append(headerItems, "   ", pbBadge)
-	}
-	if t.StopOnError {
-		soeBadge := s.StyleActive.Render(" STOP-ON-ERROR ")
-		headerItems = append(headerItems, "   ", soeBadge)
-	}
-	if t.SuddenDeath {
-		sdBadge := s.StyleActive.Render(" SUDDEN-DEATH 💀 ")
-		headerItems = append(headerItems, "   ", sdBadge)
 	}
 
 	b.WriteString(lipgloss.JoinHorizontal(lipgloss.Center, headerItems...))
@@ -202,7 +243,14 @@ func RenderTestView(t *stats.Tracker, theme config.Theme, showKeys bool, activeR
 		b.WriteString("\n\n")
 	}
 
-	b.WriteString(s.StyleSubtext.Render("[Tab] Restart Test    [Esc] Return to Menu"))
+	// Persistent Footer Hints Bar
+	footerBar := lipgloss.NewStyle().
+		Foreground(theme.Subtle).
+		Background(theme.Dim).
+		Padding(0, 2).
+		Render("Tab: restart   Esc: quit   Ctrl+C: force quit")
+
+	b.WriteString(footerBar)
 
 	content := b.String()
 	if termWidth > 0 {
@@ -220,8 +268,30 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 	b.WriteString(RenderLogo(theme))
 	b.WriteString("\n\n")
 
-	// Stat Cards
+	// Streak Counter Badge
+	records, _ := storage.LoadHistory()
+	streak := stats.CalculateStreak(records)
+	streakBadge := lipgloss.NewStyle().
+		Foreground(theme.Primary).
+		Bold(true).
+		Render(stats.FormatStreakBadge(streak))
+	b.WriteString(lipgloss.PlaceHorizontal(termWidth, lipgloss.Center, streakBadge))
+	b.WriteString("\n\n")
+
+	// Personal Best Banner if beaten
 	netWPM := t.CalculateWPM()
+	if t.IsNewPB {
+		pbBanner := lipgloss.NewStyle().
+			Foreground(theme.Background).
+			Background(theme.Secondary).
+			Bold(true).
+			Padding(0, 2).
+			Render(fmt.Sprintf("🎉 NEW BEST! %.1f WPM (prev: %.1f WPM)", netWPM, t.PreviousPBWPM))
+		b.WriteString(pbBanner)
+		b.WriteString("\n\n")
+	}
+
+	// Stat Cards
 	grossWPM := t.CalculateGrossWPM()
 	acc := t.CalculateAccuracy()
 	consistency := t.CalculateConsistency()
