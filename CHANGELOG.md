@@ -1,6 +1,13 @@
 # Changelog — JeeraType
 
+## v2.5.0 — Master Feature Verification & Full Terminal Build
+
+- **Full Verification & Rebuild**: Complete end-to-end verification of all core, Tier 1, Tier 2, Tier 3, and Tier 4 features across all 5 target platform architectures.
+- **Cross-Platform Zero-CGO**: Built and tested with pure Go SQLite (`modernc.org/sqlite`) for zero CGO dependency across `linux/amd64`, `linux/arm64`, `darwin/amd64`, `darwin/arm64`, and `windows/amd64`.
+- **Subcommand & UI Enhancements**: Full verification of `jeeratype stats`, `jeeratype stats --heatmap`, `jeeratype stats --leaderboard`, `jeeratype theme list`, `jeeratype export-replay`, and `jeeratype race`.
+
 ## v2.0.0 — Major Update Release Notes
+
 
 Welcome to JeeraType v2.0.0! This release introduces powerful new practice modes, rich stats tracking, custom themes, and under-the-hood polish.
 
