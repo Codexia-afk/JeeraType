@@ -16,11 +16,15 @@ esac
 
 echo "🚀 Installing / Updating JeeraType for ${OS}/${ARCH}..."
 
-# Fetch latest version tag from GitHub API
-LATEST_TAG=$(curl -s https://api.github.com/repos/${REPO}/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+# Fetch latest version tag from GitHub API (checking tags first, then releases)
+LATEST_TAG=$(curl -s https://api.github.com/repos/${REPO}/tags | grep '"name":' | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')
 
 if [ -z "$LATEST_TAG" ]; then
-  LATEST_TAG="v2.2.0"
+  LATEST_TAG=$(curl -s https://api.github.com/repos/${REPO}/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+fi
+
+if [ -z "$LATEST_TAG" ]; then
+  LATEST_TAG="v2.2.1"
 fi
 
 VERSION_NUM="${LATEST_TAG#v}"
@@ -33,24 +37,39 @@ URL_LOWER="https://github.com/${REPO}/releases/download/${LATEST_TAG}/jeeratype_
 URL_UPPER="https://github.com/${REPO}/releases/download/${LATEST_TAG}/JeeraType_${VERSION_NUM}_${OS}_${ARCH}.tar.gz"
 
 echo "📥 Downloading JeeraType ${LATEST_TAG}..."
-if ! curl -sSLf "$URL_LOWER" -o "$TAR_FILE" 2>/dev/null; then
-  if ! curl -sSLf "$URL_UPPER" -o "$TAR_FILE" 2>/dev/null; then
-    echo "❌ Failed to download release archive from GitHub."
-    echo "Please check available releases at: https://github.com/${REPO}/releases"
-    exit 1
+DOWNLOAD_SUCCESS=0
+
+if curl -sSLf "$URL_LOWER" -o "$TAR_FILE" 2>/dev/null; then
+  DOWNLOAD_SUCCESS=1
+elif curl -sSLf "$URL_UPPER" -o "$TAR_FILE" 2>/dev/null; then
+  DOWNLOAD_SUCCESS=1
+fi
+
+if [ "$DOWNLOAD_SUCCESS" -eq 1 ]; then
+  tar -xzf "$TAR_FILE"
+  FOUND_BIN=$(find . -maxdepth 2 -type f \( -name "jeeratype" -o -name "JeeraType" \) | head -n 1)
+  if [ -n "$FOUND_BIN" ]; then
+    chmod +x "$FOUND_BIN"
   fi
 fi
 
-tar -xzf "$TAR_FILE"
-
-FOUND_BIN=$(find . -maxdepth 2 -type f \( -name "jeeratype" -o -name "JeeraType" \) | head -n 1)
-
-if [ -z "$FOUND_BIN" ]; then
-  echo "❌ Error: Could not locate jeeratype binary inside extracted package."
-  exit 1
+# Fallback: if download binary not found and go compiler is available, build directly from source
+if [ -z "$FOUND_BIN" ] || [ ! -f "$FOUND_BIN" ]; then
+  if command -v go >/dev/null 2>&1; then
+    echo "⚙️ Building latest JeeraType binary directly via Go..."
+    go install github.com/${REPO}@latest
+    GO_BIN="$(go env GOPATH)/bin/jeeratype"
+    if [ -f "$GO_BIN" ]; then
+      FOUND_BIN="$GO_BIN"
+    fi
+  fi
 fi
 
-chmod +x "$FOUND_BIN"
+if [ -z "$FOUND_BIN" ] || [ ! -f "$FOUND_BIN" ]; then
+  echo "❌ Error: Could not download or locate jeeratype binary."
+  echo "Please download the binary directly from: https://github.com/${REPO}/releases"
+  exit 1
+fi
 
 # Check if an existing binary is currently active in PATH
 ACTIVE_PATH=$(which jeeratype 2>/dev/null || true)
