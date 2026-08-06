@@ -20,18 +20,21 @@ import (
 )
 
 func main() {
-	// Subcommand: `jeeratype theme` (list | preview <name>)
-	if len(os.Args) > 1 && os.Args[1] == "theme" {
-		if len(os.Args) > 2 && os.Args[2] == "preview" {
-			themeName := "amber"
-			if len(os.Args) > 3 {
-				themeName = os.Args[3]
+	// Robust Subcommand Matching for Theme List & Previews
+	if len(os.Args) > 1 {
+		firstArg := strings.ToLower(os.Args[1])
+		if firstArg == "theme" || firstArg == "themes" || firstArg == "--themes" || firstArg == "--theme-list" {
+			if len(os.Args) > 2 && strings.ToLower(os.Args[2]) == "preview" {
+				themeName := "jewel"
+				if len(os.Args) > 3 {
+					themeName = os.Args[3]
+				}
+				fmt.Println(cmd.RenderThemePreview(themeName))
+			} else {
+				fmt.Println(cmd.RenderThemeList())
 			}
-			fmt.Println(cmd.RenderThemePreview(themeName))
-		} else {
-			fmt.Println(cmd.RenderThemeList())
+			os.Exit(0)
 		}
-		os.Exit(0)
 	}
 
 	// Subcommand: `jeeratype stats` (--heatmap, --leaderboard)
@@ -136,6 +139,12 @@ func main() {
 	exportJSON := flag.Bool("json", false, "Export history to JSON and exit")
 
 	flag.Parse()
+
+	// Intercept --theme list or --theme preview
+	if strings.ToLower(*themeName) == "list" {
+		fmt.Println(cmd.RenderThemeList())
+		os.Exit(0)
+	}
 
 	// Initialize SQLite database
 	if err := db.InitDB(); err != nil {
