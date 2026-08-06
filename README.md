@@ -46,16 +46,44 @@ Run in your terminal to install globally:
 ```bash
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sh
 ```
-*Or download standalone binaries directly from the [GitHub Releases](https://github.com/Codexia-afk/JeeraType/releases) page.*
+*Or with `sudo`:*
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sudo sh
+```
 
 ### 🪟 Windows (PowerShell & Command Prompt)
-Run in PowerShell:
+In **PowerShell**, run:
 ```powershell
 irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex
 ```
 *Or in Command Prompt (`cmd.exe`):*
 ```cmd
 powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex"
+```
+
+---
+
+## 🗑️ Uninstalling
+
+If you wish to remove JeeraType in one command:
+
+### 🍎 macOS & 🐧 Linux
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sh
+```
+*Or if installed with `sudo`:*
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sudo sh
+```
+
+### 🪟 Windows (PowerShell & Command Prompt)
+In **PowerShell**, run:
+```powershell
+irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex
+```
+*Or in Command Prompt (`cmd.exe`):*
+```cmd
+powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex"
 ```
 
 ---
