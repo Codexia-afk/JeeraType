@@ -55,5 +55,5 @@ func FormatStreakBadge(streak int) string {
 	if streak == 0 {
 		return "[0 day streak]"
 	}
-	return fmt.Sprintf("🔥 %d day streak", streak)
+	return fmt.Sprintf("[%d day streak]", streak)
 }

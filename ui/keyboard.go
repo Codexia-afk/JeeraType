@@ -80,7 +80,7 @@ func RenderShadedKeyboardHeatmap(theme config.Theme, termWidth int) string {
 	}
 
 	var b strings.Builder
-	b.WriteString(lipgloss.NewStyle().Foreground(theme.Primary).Bold(true).Render("⌨️  Cumulative Key Error Heatmap"))
+	b.WriteString(lipgloss.NewStyle().Foreground(theme.Primary).Bold(true).Render("[Heatmap] Cumulative Key Error Heatmap"))
 	b.WriteString("\n\n")
 
 	b.WriteString(renderShadedRow(row1, errorMap, maxErr, theme, ""))

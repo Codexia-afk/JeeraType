@@ -1,6 +1,11 @@
 # Changelog — JeeraType
 
-## v2.5.0 — Master Feature Verification & Full Terminal Build
+## v2.5.1 — Corrective Quality & Cross-Terminal Release
+
+- **Cross-Terminal Alignment Fix**: Replaced emoji symbols in table titles, heatmaps, leaderboards, and themes list with clean, standard bracketed headers (`[Stats]`, `[Heatmap]`, `[Leaderboard]`, `[Themes]`) to ensure 100% perfect column alignment in all terminal environments including Windows Terminal and Linux consoles.
+- **Personal Best Scoping**: Added unit tests verifying strict scoping per mode, duration, punctuation, and numbers combination.
+- **Streak Calculation**: Added unit test coverage validating calendar day calculation across consecutive and skipped days.
+- **Fresh Release Asset Pipeline**: Released prebuilt binaries for `v2.5.1` via GitHub release workflow.
 
 - **Full Verification & Rebuild**: Complete end-to-end verification of all core, Tier 1, Tier 2, Tier 3, and Tier 4 features across all 5 target platform architectures.
 - **Cross-Platform Zero-CGO**: Built and tested with pure Go SQLite (`modernc.org/sqlite`) for zero CGO dependency across `linux/amd64`, `linux/arm64`, `darwin/amd64`, `darwin/arm64`, and `windows/amd64`.

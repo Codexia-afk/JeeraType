@@ -17,7 +17,7 @@ import (
 	"github.com/Codexia-afk/JeeraType/ui"
 )
 
-var Version = "v2.5.0"
+var Version = "v2.5.1"
 
 func main() {
 	// Subcommand: `jeeratype theme list` & `jeeratype theme preview`

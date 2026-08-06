@@ -3,6 +3,7 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -99,4 +100,27 @@ func LoadHistory() ([]HistoryRecord, error) {
 	}
 
 	return records, scanner.Err()
+}
+
+// GetPBKey builds a unique key string for scoping Personal Bests per mode+duration+punctuation+numbers combo.
+func GetPBKey(mode string, durationSec int, punctuation bool, numbers bool) string {
+	puncStr := "no_punc"
+	if punctuation {
+		puncStr = "punc"
+	}
+	numStr := "no_num"
+	if numbers {
+		numStr = "num"
+	}
+	return fmt.Sprintf("%s_%ds_%s_%s", mode, durationSec, puncStr, numStr)
+}
+
+// CheckAndUpdatePBInMap checks if a WPM beats previous PB for a given modeKey.
+func CheckAndUpdatePBInMap(pbMap map[string]float64, modeKey string, wpm float64) (float64, bool) {
+	prevPB := pbMap[modeKey]
+	if wpm > prevPB && wpm > 0 {
+		pbMap[modeKey] = wpm
+		return prevPB, true
+	}
+	return prevPB, false
 }

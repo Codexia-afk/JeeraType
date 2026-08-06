@@ -20,7 +20,7 @@ func RenderStatsTable(records []storage.HistoryRecord, theme config.Theme) strin
 		Bold(true).
 		Padding(0, 1)
 
-	b.WriteString(titleStyle.Render("📊 JeeraType — Session History (Last 20 Runs)"))
+	b.WriteString(titleStyle.Render("[Stats] JeeraType — Session History (Last 20 Runs)"))
 	b.WriteString("\n\n")
 
 	if len(records) == 0 {

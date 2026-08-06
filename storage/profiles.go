@@ -64,7 +64,7 @@ func GetLeaderboard() ([]ProfileStats, error) {
 func FormatLeaderboardTable(leaderboard []ProfileStats) string {
 	var sb fmt.Stringer
 	_ = sb
-	res := "🏆 JeeraType Local Leaderboard\n\n"
+	res := "[Leaderboard] JeeraType Local Leaderboard\n\n"
 	res += fmt.Sprintf("%-15s %-10s %-12s %-12s %-10s\n", "PROFILE", "TOP WPM", "TOTAL RUNS", "AVG WPM", "AVG ACC")
 	res += "-------------------------------------------------------------\n"
 	for _, ps := range leaderboard {

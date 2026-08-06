@@ -17,7 +17,7 @@ func RenderThemeList() string {
 		Bold(true).
 		Padding(0, 1)
 
-	b.WriteString(titleStyle.Render("🎨 JeeraType — Registered Color Themes"))
+	b.WriteString(titleStyle.Render("[Themes] JeeraType — Registered Color Themes"))
 	b.WriteString("\n\n")
 
 	for _, th := range config.AvailableThemes {

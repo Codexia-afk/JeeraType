@@ -301,7 +301,7 @@ func RenderResultsView(t *stats.Tracker, theme config.Theme, termWidth int) stri
 			Background(theme.Secondary).
 			Bold(true).
 			Padding(0, 2).
-			Render(fmt.Sprintf("🎉 NEW BEST! %.1f WPM (prev: %.1f WPM)", netWPM, t.PreviousPBWPM))
+			Render(fmt.Sprintf("NEW BEST! %.1f WPM (prev: %.1f WPM)", netWPM, t.PreviousPBWPM))
 		b.WriteString(pbBanner)
 		b.WriteString("\n\n")
 	}
