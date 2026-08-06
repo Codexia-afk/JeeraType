@@ -24,7 +24,7 @@ if [ -z "$LATEST_TAG" ]; then
 fi
 
 if [ -z "$LATEST_TAG" ]; then
-  LATEST_TAG="v2.3.0"
+  LATEST_TAG="v2.4.0"
 fi
 
 VERSION_NUM="${LATEST_TAG#v}"
@@ -53,11 +53,11 @@ if [ "$DOWNLOAD_SUCCESS" -eq 1 ]; then
   fi
 fi
 
-# Fallback: if release tarball not found, compile directly from repository via Go
+# Fallback: if release tarball not found, compile directly from main branch via Go
 if [ -z "$FOUND_BIN" ] || [ ! -f "$FOUND_BIN" ]; then
   if command -v go >/dev/null 2>&1; then
-    echo "⚙️ Building latest JeeraType binary directly via Go..."
-    go install "github.com/${REPO}@latest" 2>/dev/null || go install "github.com/${REPO}@main"
+    echo "⚙️ Building latest JeeraType binary directly from GitHub main branch..."
+    go install "github.com/${REPO}@main"
     GO_BIN="$(go env GOPATH)/bin/jeeratype"
     if [ -f "$GO_BIN" ]; then
       FOUND_BIN="$GO_BIN"
@@ -75,10 +75,8 @@ fi
 GLOBAL_DIR="/usr/local/bin"
 
 if [ -w "$GLOBAL_DIR" ]; then
-  if [ "$FOUND_BIN" != "$GLOBAL_DIR/$BINARY_NAME" ]; then
-    cp -f "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME"
-    chmod +x "$GLOBAL_DIR/$BINARY_NAME"
-  fi
+  cp -f "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME"
+  chmod +x "$GLOBAL_DIR/$BINARY_NAME"
   echo ""
   echo "✅ JeeraType successfully installed to ${GLOBAL_DIR}/${BINARY_NAME}!"
   echo "Type 'jeeratype' anywhere in your terminal to start!"
@@ -99,10 +97,8 @@ fi
 # User-level fallback: $HOME/.local/bin
 FALLBACK_DIR="$HOME/.local/bin"
 mkdir -p "$FALLBACK_DIR"
-if [ "$FOUND_BIN" != "$FALLBACK_DIR/$BINARY_NAME" ]; then
-  cp -f "$FOUND_BIN" "$FALLBACK_DIR/$BINARY_NAME"
-  chmod +x "$FALLBACK_DIR/$BINARY_NAME"
-fi
+cp -f "$FOUND_BIN" "$FALLBACK_DIR/$BINARY_NAME"
+chmod +x "$FALLBACK_DIR/$BINARY_NAME"
 
 PROFILES="$HOME/.zshrc $HOME/.bashrc $HOME/.profile $HOME/.bash_profile $HOME/.config/fish/config.fish"
 for PROFILE in $PROFILES; do

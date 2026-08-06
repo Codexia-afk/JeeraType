@@ -6,7 +6,7 @@ $BinaryName = "jeeratype.exe"
 
 Write-Host "🚀 Installing / Updating JeeraType for Windows..." -ForegroundColor Cyan
 
-# Query latest version tag from GitHub API (checking tags first, then releases)
+# Query latest version tag from GitHub API
 try {
     $Tags = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/tags"
     $Tag = $Tags[0].name
@@ -15,7 +15,7 @@ try {
         $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
         $Tag = $Release.tag_name
     } catch {
-        $Tag = "v2.3.0"
+        $Tag = "v2.4.0"
     }
 }
 
@@ -54,8 +54,8 @@ if ($DownloadSuccess -and (Test-Path $TempZip)) {
 } else {
     # Fallback for Windows if go compiler is installed
     if (Get-Command go -ErrorAction SilentlyContinue) {
-        Write-Host "⚙️ Building latest JeeraType binary directly via Go..." -ForegroundColor Cyan
-        go install "github.com/${Repo}@latest"
+        Write-Host "⚙️ Building latest JeeraType binary directly from main branch..." -ForegroundColor Cyan
+        go install "github.com/${Repo}@main"
         $GoExe = Join-Path (go env GOPATH) "bin\jeeratype.exe"
         if (Test-Path $GoExe) {
             Copy-Item -Path $GoExe -Destination (Join-Path $InstallDir $BinaryName) -Force
