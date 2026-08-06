@@ -50,6 +50,27 @@ type Tracker struct {
 	SuddenDeath        bool // Sudden Death mode
 	RunBigramLatencies []BigramLatency
 	MissedKeysMap      map[rune]int
+	OnNeedMoreText     func()
+}
+
+// AppendText appends more text to the active typing stream (used in Zen Mode).
+func (t *Tracker) AppendText(moreText string) {
+	if len(moreText) == 0 {
+		return
+	}
+	prefix := ""
+	if len(t.TargetRunes) > 0 && t.TargetRunes[len(t.TargetRunes)-1] != ' ' {
+		prefix = " "
+	}
+	added := prefix + moreText
+	addedRunes := []rune(added)
+	t.TargetText += added
+	t.TargetRunes = append(t.TargetRunes, addedRunes...)
+	newStates := make([]CharStatus, len(addedRunes))
+	for i := range newStates {
+		newStates[i] = StatusUntyped
+	}
+	t.CharStates = append(t.CharStates, newStates...)
 }
 
 // NewTracker creates a new typing tracker.
@@ -87,6 +108,15 @@ func (t *Tracker) Start() {
 
 // RecordRune processes typed character input.
 func (t *Tracker) RecordRune(r rune) {
+	if t.IsZen && t.CursorIdx >= len(t.TargetRunes)-20 {
+		if t.OnNeedMoreText != nil {
+			t.OnNeedMoreText()
+		} else {
+			// Fallback auto-extend by repeating TargetText
+			t.AppendText(t.TargetText)
+		}
+	}
+
 	if t.IsFinished || t.CursorIdx >= len(t.TargetRunes) {
 		return
 	}

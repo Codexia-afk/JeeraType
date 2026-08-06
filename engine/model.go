@@ -200,6 +200,12 @@ func (m *Model) StartTest() {
 	}
 
 	m.tracker = stats.NewTracker(targetText, duration, m.ghostWPM, m.stopOnError, m.suddenDeath, m.isZen)
+	if m.isZen {
+		m.tracker.OnNeedMoreText = func() {
+			more := generator.GenerateText(0, m.punctuation, m.numbers)
+			m.tracker.AppendText(more)
+		}
+	}
 
 	// Combo key for Personal Best checking
 	puncStr := "no_punc"
