@@ -62,6 +62,31 @@ go install github.com/Codexia-afk/JeeraType@latest
 
 ---
 
+## 🗑️ Uninstalling
+
+If you ever wish to remove JeeraType from your machine, run the one-line uninstall command for your operating system:
+
+### 🍎 macOS & 🐧 Linux (One-Line Uninstall)
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sh
+```
+*Or if installed with `sudo`:*
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sudo sh
+```
+
+### 🪟 Windows (PowerShell & Command Prompt)
+In **PowerShell**, run:
+```powershell
+irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex
+```
+*Or in Command Prompt (`cmd.exe`):*
+```cmd
+powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex"
+```
+
+---
+
 ## Usage & CLI Flags
 
 ```bash
