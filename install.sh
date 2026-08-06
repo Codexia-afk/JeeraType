@@ -14,13 +14,13 @@ case "$ARCH" in
   *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
-echo "🚀 Installing JeeraType for ${OS}/${ARCH}..."
+echo "🚀 Installing / Updating JeeraType for ${OS}/${ARCH}..."
 
 # Fetch latest version tag from GitHub API
 LATEST_TAG=$(curl -s https://api.github.com/repos/${REPO}/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 
 if [ -z "$LATEST_TAG" ]; then
-  LATEST_TAG="v1.0.2"
+  LATEST_TAG="v2.1.0"
 fi
 
 VERSION_NUM="${LATEST_TAG#v}"
@@ -43,7 +43,6 @@ fi
 
 tar -xzf "$TAR_FILE"
 
-# Find binary inside extracted directory
 FOUND_BIN=$(find . -maxdepth 2 -type f \( -name "jeeratype" -o -name "JeeraType" \) | head -n 1)
 
 if [ -z "$FOUND_BIN" ]; then
@@ -53,11 +52,29 @@ fi
 
 chmod +x "$FOUND_BIN"
 
+# Check if an existing binary is currently active in PATH
+ACTIVE_PATH=$(which jeeratype 2>/dev/null || true)
+if [ -n "$ACTIVE_PATH" ] && [ -w "$ACTIVE_PATH" ]; then
+  cp "$FOUND_BIN" "$ACTIVE_PATH"
+  chmod +x "$ACTIVE_PATH"
+  echo ""
+  echo "✅ JeeraType successfully updated at ${ACTIVE_PATH}!"
+  echo "Type 'jeeratype' anywhere in your terminal to start!"
+  exit 0
+fi
+
+# Also check go/bin fallback if present
+GOPATH_BIN="$HOME/go/bin/jeeratype"
+if [ -f "$GOPATH_BIN" ] && [ -w "$GOPATH_BIN" ]; then
+  cp "$FOUND_BIN" "$GOPATH_BIN"
+  chmod +x "$GOPATH_BIN"
+fi
+
 # Global binary destination
 GLOBAL_DIR="/usr/local/bin"
 
 if [ -w "$GLOBAL_DIR" ]; then
-  mv "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME"
+  cp "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME"
   chmod +x "$GLOBAL_DIR/$BINARY_NAME"
   echo ""
   echo "✅ JeeraType installed globally to ${GLOBAL_DIR}/${BINARY_NAME}!"
@@ -65,24 +82,25 @@ if [ -w "$GLOBAL_DIR" ]; then
   exit 0
 fi
 
-# Try elevating with sudo if available
-if command -v sudo >/dev/null 2>&1; then
-  echo "⚙️ Installing to global system directory ${GLOBAL_DIR}..."
-  if sudo mv "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME" 2>/dev/null && sudo chmod +x "$GLOBAL_DIR/$BINARY_NAME" 2>/dev/null; then
-    echo ""
-    echo "✅ JeeraType installed globally to ${GLOBAL_DIR}/${BINARY_NAME}!"
-    echo "Type 'jeeratype' anywhere in your terminal to start!"
-    exit 0
+# Elevate with sudo if needed for /usr/local/bin
+if [ -f "$GLOBAL_DIR/$BINARY_NAME" ] || [ ! -w "$GLOBAL_DIR" ]; then
+  if command -v sudo >/dev/null 2>&1; then
+    echo "⚙️ Updating global system installation in ${GLOBAL_DIR}..."
+    if sudo cp "$FOUND_BIN" "$GLOBAL_DIR/$BINARY_NAME" && sudo chmod +x "$GLOBAL_DIR/$BINARY_NAME"; then
+      echo ""
+      echo "✅ JeeraType successfully updated at ${GLOBAL_DIR}/${BINARY_NAME}!"
+      echo "Type 'jeeratype' anywhere in your terminal to start!"
+      exit 0
+    fi
   fi
 fi
 
 # User-level fallback: $HOME/.local/bin
 FALLBACK_DIR="$HOME/.local/bin"
 mkdir -p "$FALLBACK_DIR"
-mv "$FOUND_BIN" "$FALLBACK_DIR/$BINARY_NAME"
+cp "$FOUND_BIN" "$FALLBACK_DIR/$BINARY_NAME"
 chmod +x "$FALLBACK_DIR/$BINARY_NAME"
 
-# Automatically append to PATH in all common shell profiles
 PROFILES="$HOME/.zshrc $HOME/.bashrc $HOME/.profile $HOME/.bash_profile $HOME/.config/fish/config.fish"
 for PROFILE in $PROFILES; do
   if [ -f "$PROFILE" ] && [ -w "$PROFILE" ]; then
@@ -92,7 +110,6 @@ for PROFILE in $PROFILES; do
   fi
 done
 
-# Instantly export PATH for current shell subshell
 export PATH="$FALLBACK_DIR:$PATH"
 
 echo ""
