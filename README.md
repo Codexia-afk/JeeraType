@@ -88,21 +88,51 @@ powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/
 
 ---
 
-## Usage
+## Usage & CLI Reference
 
 ```bash
-# Launch default 30s typing test
+# 🚀 Launch Default Interactive Session
 jeeratype
 
-# Pipe text directly into JeeraType
-cat essay.txt | jeeratype
+# 📊 Stats, Analytics & Leaderboards
+jeeratype stats               # View history table of last 20 runs + trend arrows (↑/↓/–)
+jeeratype stats --heatmap     # Render 5-level shaded ASCII key error heatmap
+jeeratype stats --leaderboard # View multi-profile leaderboard rankings
 
-# Open long file with auto-resume reading progress
-jeeratype /path/to/book.txt
+# 🧘 Practice Modes
+jeeratype --zen               # Infinite typing stream (no timer, press Esc to end)
+jeeratype --punctuation -p    # Enable realistic capitalization & punctuation
+jeeratype --numbers -n        # Enable numeric digit tokens
+jeeratype -p -n               # Enable both punctuation and numbers
+jeeratype --quotes            # Practice structured English quotes
 
-# View session history and key heatmap
-jeeratype stats
-jeeratype stats --heatmap
+# 💻 Code Mode
+jeeratype --mode code --lang python # Practice Python code snippets
+jeeratype --mode code --lang js     # Practice JavaScript code snippets
+jeeratype --mode code --lang go     # Practice Go code snippets
+
+# 🎯 Target Drills & Hardcore Modes
+jeeratype --mode adaptive     # Target passage targeting your weakest keys & bigrams
+jeeratype --death -d          # Single typo immediately resets test session
+jeeratype --stop-on-error -soe# Forces error correction before advancing
+jeeratype --ghost 80 -g 80    # Set Target Ghost Pacer to 80 WPM
+
+# 🎨 Customization & Audio
+jeeratype --theme dracula -t dracula # Options: amber, dracula, nord, solarized, catppuccin, gruvbox, matrix
+jeeratype --sound            # Enable terminal bell / audio click feedback
+jeeratype --showkeys -sk      # Enable live visual QWERTY keyboard overlay at bottom
+
+# 👤 Multi-User Profiles & Custom Word Lists
+jeeratype --profile Alex      # Scope test session & stats to a specific profile
+jeeratype --wordlist /path/to/mywords.txt # Practice custom vocabulary (≥50 words required)
+
+# 🏎️ Replays & UNIX Pipelines
+jeeratype export-replay       # Export last run timeline to JSON (e.g. replay_12345.json)
+jeeratype race replay.json    # Race live against a past recorded replay
+cat essay.txt | jeeratype     # Pipe text directly into JeeraType
+jeeratype /path/to/book.txt   # Read file with auto-resume progress offset
+jeeratype --csv               # Export raw test history to CSV format
+jeeratype --json              # Export raw test history to JSON format
 ```
 
 ---
