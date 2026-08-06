@@ -4,14 +4,19 @@ $ErrorActionPreference = "Stop"
 $Repo = "Codexia-afk/JeeraType"
 $BinaryName = "jeeratype.exe"
 
-Write-Host "🚀 Installing JeeraType for Windows..." -ForegroundColor Cyan
+Write-Host "🚀 Installing / Updating JeeraType for Windows..." -ForegroundColor Cyan
 
-# Query latest version tag from GitHub API
+# Query latest version tag from GitHub API (checking tags first, then releases)
 try {
-    $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
-    $Tag = $Release.tag_name
+    $Tags = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/tags"
+    $Tag = $Tags[0].name
 } catch {
-    $Tag = "v1.0.2"
+    try {
+        $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
+        $Tag = $Release.tag_name
+    } catch {
+        $Tag = "v2.3.0"
+    }
 }
 
 $CleanTag = $Tag.TrimStart("v")
@@ -28,17 +33,39 @@ $TempZip = Join-Path $env:TEMP "jeeratype.zip"
 $TempExtract = Join-Path $env:TEMP "jeeratype_extract"
 
 Write-Host "📥 Downloading JeeraType $Tag..." -ForegroundColor Cyan
-Invoke-WebRequest -Uri $DownloadUrl -OutFile $TempZip -UseBasicParsing
 
-Write-Host "📦 Extracting executable..." -ForegroundColor Cyan
-if (Test-Path $TempExtract) { Remove-Item $TempExtract -Recurse -Force }
-Expand-Archive -Path $TempZip -DestinationPath $TempExtract -Force
+$DownloadSuccess = $false
+try {
+    Invoke-WebRequest -Uri $DownloadUrl -OutFile $TempZip -UseBasicParsing
+    $DownloadSuccess = $true
+} catch {
+    Write-Host "⚠️ Direct release zip not found. Attempting Go build fallback..." -ForegroundColor Yellow
+}
 
-$ExtractedExe = Get-ChildItem -Path $TempExtract -Filter "jeeratype.exe" -Recurse | Select-Object -First 1
-if ($ExtractedExe) {
-    Copy-Item -Path $ExtractedExe.FullName -Destination (Join-Path $InstallDir $BinaryName) -Force
+if ($DownloadSuccess -and (Test-Path $TempZip)) {
+    Write-Host "📦 Extracting executable..." -ForegroundColor Cyan
+    if (Test-Path $TempExtract) { Remove-Item $TempExtract -Recurse -Force }
+    Expand-Archive -Path $TempZip -DestinationPath $TempExtract -Force
+
+    $ExtractedExe = Get-ChildItem -Path $TempExtract -Filter "jeeratype.exe" -Recurse | Select-Object -First 1
+    if ($ExtractedExe) {
+        Copy-Item -Path $ExtractedExe.FullName -Destination (Join-Path $InstallDir $BinaryName) -Force
+    }
 } else {
-    Write-Error "Could not locate jeeratype.exe inside archive."
+    # Fallback for Windows if go compiler is installed
+    if (Get-Command go -ErrorAction SilentlyContinue) {
+        Write-Host "⚙️ Building latest JeeraType binary directly via Go..." -ForegroundColor Cyan
+        go install "github.com/${Repo}@latest"
+        $GoExe = Join-Path (go env GOPATH) "bin\jeeratype.exe"
+        if (Test-Path $GoExe) {
+            Copy-Item -Path $GoExe -Destination (Join-Path $InstallDir $BinaryName) -Force
+        }
+    }
+}
+
+$FinalExe = Join-Path $InstallDir $BinaryName
+if (!(Test-Path $FinalExe)) {
+    Write-Error "Could not locate or compile jeeratype.exe."
     exit 1
 }
 
@@ -60,5 +87,5 @@ Remove-Item $TempZip -Force -ErrorAction SilentlyContinue
 Remove-Item $TempExtract -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "✅ JeeraType installed successfully!" -ForegroundColor Green
+Write-Host "✅ JeeraType updated successfully!" -ForegroundColor Green
 Write-Host "Type 'jeeratype' in your terminal to start!" -ForegroundColor White
