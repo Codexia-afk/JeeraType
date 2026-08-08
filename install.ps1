@@ -1,27 +1,63 @@
 # JeeraType One-Line Windows PowerShell Installer
 $ErrorActionPreference = "Stop"
 
+# Ensure TLS 1.2 is enabled for older PowerShell / Windows versions
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+
 $Repo = "Codexia-afk/JeeraType"
 $BinaryName = "jeeratype.exe"
 
-Write-Host "🚀 Installing / Updating JeeraType for Windows..." -ForegroundColor Cyan
+# Architecture Detection (amd64 or arm64)
+$Arch = "amd64"
+if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64" -or $env:PROCESSOR_ARCHITEW6432 -eq "ARM64") {
+    $Arch = "arm64"
+}
 
-# Query latest version tag from GitHub API
+Write-Host "🚀 Installing / Updating JeeraType for Windows ($Arch)..." -ForegroundColor Cyan
+
+# 1. Query GitHub API for published releases (prioritizing prebuilt release assets over raw git tags)
+$Release = $null
+$Tag = $null
+
 try {
-    $Tags = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/tags"
-    $Tag = $Tags[0].name
+    $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers @{"User-Agent"="PowerShell"} -ErrorAction Stop
+    $Tag = $Release.tag_name
 } catch {
     try {
-        $Release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
-        $Tag = $Release.tag_name
+        $Releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases" -Headers @{"User-Agent"="PowerShell"} -ErrorAction Stop
+        if ($Releases.Count -gt 0) {
+            $Release = $Releases[0]
+            $Tag = $Release.tag_name
+        }
     } catch {
-        $Tag = "v2.4.0"
+        try {
+            $Tags = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/tags" -Headers @{"User-Agent"="PowerShell"} -ErrorAction Stop
+            if ($Tags.Count -gt 0) {
+                $Tag = $Tags[0].name
+            }
+        } catch {}
     }
 }
 
-$CleanTag = $Tag.TrimStart("v")
-$ZipName = "jeeratype_${CleanTag}_windows_amd64.zip"
-$DownloadUrl = "https://github.com/$Repo/releases/download/$Tag/$ZipName"
+if ([string]::IsNullOrWhiteSpace($Tag)) {
+    $Tag = "v2.5.0"
+}
+
+# 2. Determine Download URL
+$DownloadUrl = $null
+
+if ($Release -and $Release.assets) {
+    $MatchingAsset = $Release.assets | Where-Object { $_.name -like "*windows*${Arch}*.zip" } | Select-Object -First 1
+    if ($MatchingAsset) {
+        $DownloadUrl = $MatchingAsset.browser_download_url
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($DownloadUrl)) {
+    $CleanTag = $Tag.TrimStart("v")
+    $ZipName = "jeeratype_${CleanTag}_windows_${Arch}.zip"
+    $DownloadUrl = "https://github.com/$Repo/releases/download/$Tag/$ZipName"
+}
 
 # Target Install Directory: %USERPROFILE%\.jeeratype\bin
 $InstallDir = Join-Path $env:USERPROFILE ".jeeratype\bin"
@@ -36,10 +72,21 @@ Write-Host "📥 Downloading JeeraType $Tag..." -ForegroundColor Cyan
 
 $DownloadSuccess = $false
 try {
-    Invoke-WebRequest -Uri $DownloadUrl -OutFile $TempZip -UseBasicParsing
+    Invoke-WebRequest -Uri $DownloadUrl -OutFile $TempZip -UseBasicParsing -ErrorAction Stop
     $DownloadSuccess = $true
 } catch {
-    Write-Host "⚠️ Direct release zip not found. Attempting Go build fallback..." -ForegroundColor Yellow
+    # If initial URL failed, fallback to direct download URL of latest release
+    try {
+        $LatestRelease = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers @{"User-Agent"="PowerShell"} -ErrorAction Stop
+        $FallbackTag = $LatestRelease.tag_name
+        $CleanFallbackTag = $FallbackTag.TrimStart("v")
+        $FallbackUrl = "https://github.com/$Repo/releases/download/$FallbackTag/jeeratype_${CleanFallbackTag}_windows_${Arch}.zip"
+        Write-Host "⚠️ Primary release zip not found. Falling back to latest release $FallbackTag..." -ForegroundColor Yellow
+        Invoke-WebRequest -Uri $FallbackUrl -OutFile $TempZip -UseBasicParsing -ErrorAction Stop
+        $DownloadSuccess = $true
+    } catch {
+        Write-Host "⚠️ Direct release zip not found. Attempting Go build fallback..." -ForegroundColor Yellow
+    }
 }
 
 if ($DownloadSuccess -and (Test-Path $TempZip)) {
