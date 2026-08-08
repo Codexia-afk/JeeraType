@@ -1,5 +1,10 @@
 # Changelog — JeeraType
 
+## v2.5.3 — Robust Windows Installer & Published Release Update
+
+- **Resilient Windows Installer (`install.ps1`)**: Prioritized GitHub `/releases/latest` API over raw git tags, added automatic asset URL matching, TLS 1.2 auto-enabling, ARM64 architecture detection, and multi-tier release fallback.
+- **Published Release Alignment**: Published prebuilt release binary assets for Windows (`amd64`, `arm64`), macOS (`amd64`, `arm64`), and Linux (`amd64`, `arm64`).
+
 ## v2.5.1 — Corrective Quality & Cross-Terminal Release
 
 - **Cross-Terminal Alignment Fix**: Replaced emoji symbols in table titles, heatmaps, leaderboards, and themes list with clean, standard bracketed headers (`[Stats]`, `[Heatmap]`, `[Leaderboard]`, `[Themes]`) to ensure 100% perfect column alignment in all terminal environments including Windows Terminal and Linux consoles.
