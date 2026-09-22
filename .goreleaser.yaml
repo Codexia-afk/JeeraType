@@ -1,5 +1,5 @@
 # .goreleaser.yaml for JeeraType cross-platform releases
-version: 1
+version: 2
 
 before:
   hooks:
@@ -7,6 +7,7 @@ before:
 
 builds:
   - id: jeeratype
+    main: .
     binary: jeeratype
     env:
       - CGO_ENABLED=0
@@ -21,17 +22,18 @@ builds:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - format: tar.gz
+  - id: default
+    format: tar.gz
     name_template: "jeeratype_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
     format_overrides:
       - goos: windows
         format: zip
 
 checksum:
   name_template: 'checksums.txt'
-
-snapshot:
-  name_template: "{{ .Tag }}-next"
 
 changelog:
   sort: asc
