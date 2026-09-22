@@ -1,146 +1,203 @@
-# JeeraType
+# JeeraType — #1 Terminal Typing Test ⚡
 
-A 100% offline, cross-platform terminal typing test for macOS, Windows, and Linux that runs instantly in any shell without network access or web browser tabs.
+> **The #1 100% Offline, Cross-Platform CLI Typing Speed & Accuracy Trainer for macOS, Windows, and Linux.**
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/Codexia-afk/JeeraType?style=flat-square)](https://go.dev)
+[![Release](https://img.shields.io/github/v/release/Codexia-afk/JeeraType?style=flat-square&color=blue)](https://github.com/Codexia-afk/JeeraType/releases)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/Codexia-afk/JeeraType?style=flat-square&color=00ADD8)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/github/v/release/Codexia-afk/JeeraType?style=flat-square)](https://github.com/Codexia-afk/JeeraType/releases)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square)](#installation)
-
-<!-- TODO: add demo.gif -->
-
-Unlike browser-based typing tests that require web tabs and accounts, JeeraType runs fully offline directly inside your terminal window as a standalone tool.
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square)](#-installation)
+[![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/srinjoypramanick)
 
 ---
 
-## Why JeeraType?
+## ☕ Support & Sponsor
 
-- **100% Offline & Private**: Zero network calls, telemetry, or external web requests — word banks, code snippets, and themes are completely self-contained.
-- **Single Executable File**: Ships as a single standalone executable per operating system with zero external dependencies.
-- **Low Latency Input**: Sub-16ms keystroke rendering engine designed for fluid, responsive typing.
-- **Multi-Platform Support**: Identical user interface and behavior across macOS Terminal, iTerm2, Linux terminals, and Windows Terminal.
+If **JeeraType** helps you boost your typing speed, consider supporting the project! Your sponsorship keeps JeeraType 100% free, offline, and actively maintained.
+
+<p align="center">
+  <a href="https://ko-fi.com/srinjoypramanick" target="_blank">
+    <img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Buy Me a Coffee at ko-fi.com" height="48">
+  </a>
+</p>
+
+<p align="center">
+  👉 <b><a href="https://ko-fi.com/srinjoypramanick">Sponsor JeeraType on Ko-fi (ko-fi.com/srinjoypramanick)</a></b> 👈
+</p>
 
 ---
 
-## Features
+## 📌 Table of Contents
 
-- **Punctuation & Numbers**: Practice realistic text with capital letters, punctuation, and digits (`jeeratype --punctuation --numbers`).
-- **Zen Mode**: Type infinitely without timers or word caps (`jeeratype --zen`).
+- [Why JeeraType?](#-why-jeeratype)
+- [Features](#-features)
+- [Installation](#-installation)
+  - [macOS & Linux](#-macos--linux)
+  - [Windows](#-windows-powershell--command-prompt)
+- [Usage & CLI Reference](#-usage--cli-reference)
+- [Themes & Customization](#-themes--customization)
+- [Uninstalling](#-uninstalling)
+- [Support & Sponsor](#-support--sponsor-1)
+- [License](#-license)
+
+---
+
+## ⚡ Why JeeraType?
+
+Unlike browser-based typing tests that require web tabs, accounts, and internet access, **JeeraType** is a standalone, lightweight, ultra-low latency CLI & TUI terminal typing test designed for developers, sysadmins, and keyboard enthusiasts.
+
+- 🔒 **100% Offline & Private**: Zero network calls, telemetry, or external web requests. Word banks, code snippets, and themes are 100% self-contained.
+- 🚀 **Single Standalone Binary**: Ships as a single executable with zero external dependencies.
+- ⚡ **Sub-16ms Keystroke Latency**: Fluid, responsive rendering powered by Go and Bubble Tea.
+- 🖥️ **Cross-Platform Compatibility**: Identical experience across macOS Terminal, iTerm2, Linux terminals, and Windows Terminal.
+- 🎯 **Offline MonkeyType Alternative**: Built-in WPM analytics, streak tracking, error heatmaps, and customizable themes directly inside your terminal.
+
+---
+
+## ✨ Features
+
+- **Punctuation & Numbers**: Practice realistic text with capital letters, commas, periods, and numeric digits (`jeeratype --punctuation --numbers`).
+- **Zen Mode**: Type infinitely without timers or word caps for relaxed flow practice (`jeeratype --zen`).
 - **Code Mode**: Practice real code snippets for Python, JavaScript, and Go (`jeeratype --mode code --lang python`).
-- **Death Mode**: Restart instantly upon a single typo for strict accuracy training (`jeeratype --death`).
-- **Custom Word Lists**: Load your own vocabulary files (`jeeratype --wordlist /path/to/words.txt`).
-- **Personal Best Tracking**: Automatically alerts you when you set a new WPM speed record.
-- **Session History**: Table of your last 20 typing runs with speed trend indicators (`jeeratype stats`).
-- **Key Error Heatmap**: Visual ASCII keyboard shaded by error frequency (`jeeratype stats --heatmap`).
-- **Local Leaderboard**: Track separate profiles for multiple users (`jeeratype --profile Alex` and `jeeratype stats --leaderboard`).
-- **Replay & Race**: Export keystroke timelines to JSON and race against past runs (`jeeratype export-replay` & `jeeratype race replay.json`).
-- **Color Themes**: Built-in schemes like Dracula, Nord, Solarized, Amber, Catppuccin, Gruvbox, and Matrix (`jeeratype --theme dracula`).
-- **Optional Audio**: Subtle terminal bell sound feedback on keypresses and typos (`jeeratype --sound`).
+- **Death Mode**: Sudden-death accuracy drill — a single typo instantly resets the test (`jeeratype --death`).
+- **Custom Word Lists**: Load your own custom vocabulary files (`jeeratype --wordlist /path/to/words.txt`).
+- **Personal Best Tracking**: Automatic WPM record detection with celebratory banners.
+- **Session History & Analytics**: SQLite-backed history table of your last 20 typing runs with speed trend indicators (`jeeratype stats`).
+- **Key Error Heatmap**: Visual 5-level shaded ASCII QWERTY keyboard map highlighting error frequencies (`jeeratype stats --heatmap`).
+- **Local Leaderboard**: Multi-profile support for tracking multiple users or practice routines (`jeeratype --profile Alex`).
+- **Replays & Racing**: Export keystroke timelines to JSON and race live against past runs (`jeeratype export-replay` & `jeeratype race replay.json`).
+- **18 Custom Color Themes**: Themes like Dracula, Nord, Solarized, Catppuccin, Gruvbox, Jewel, Neon, and Matrix (`jeeratype --theme dracula`).
+- **Audio Feedback**: Optional terminal bell sound feedback on keypresses and typos (`jeeratype --sound`).
 
 ---
 
-## Installation
+## 📦 Installation
 
 ### 🍎 macOS & 🐧 Linux
+
 Run in your terminal to install globally:
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sh
 ```
+
 *Or with `sudo`:*
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.sh | sudo sh
 ```
 
+---
+
 ### 🪟 Windows (PowerShell & Command Prompt)
+
 In **PowerShell**, run:
+
 ```powershell
 irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex
 ```
+
 *Or in Command Prompt (`cmd.exe`):*
+
 ```cmd
 powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/install.ps1 | iex"
 ```
 
-> **Note on Updating**: You do **NOT** need to uninstall JeeraType before updating. Running the install command again automatically upgrades your binary to the latest version while preserving all your saved stats, history, and themes!
+> 💡 **Note on Updating**: Running the install command again automatically upgrades your binary to the latest version while preserving all your saved stats, history, and themes!
 
 ---
 
-## 🗑️ Uninstalling
-
-If you wish to remove JeeraType in one command:
-
-### 🍎 macOS & 🐧 Linux
-```bash
-curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sh
-```
-*Or if installed with `sudo`:*
-```bash
-curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sudo sh
-```
-
-### 🪟 Windows (PowerShell & Command Prompt)
-In **PowerShell**, run:
-```powershell
-irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex
-```
-*Or in Command Prompt (`cmd.exe`):*
-```cmd
-powershell -c "irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex"
-```
-
----
-
-## Usage & CLI Reference
+## 💻 Usage & CLI Reference
 
 ```bash
 # 🚀 Launch Default Interactive Session
 jeeratype
 
 # 📊 Stats, Analytics & Leaderboards
-jeeratype stats               # View history table of last 20 runs + trend arrows (↑/↓/–)
-jeeratype stats --heatmap     # Render 5-level shaded ASCII key error heatmap
-jeeratype stats --leaderboard # View multi-profile leaderboard rankings
+jeeratype stats               # History table of last 20 runs + trend arrows (↑/↓/–)
+jeeratype stats --heatmap     # Visual 5-level shaded ASCII key error heatmap
+jeeratype stats --leaderboard # Multi-profile leaderboard rankings
 
 # 🧘 Practice Modes
 jeeratype --zen               # Infinite typing stream (no timer, press Esc to end)
-jeeratype --punctuation -p    # Enable realistic capitalization & punctuation
+jeeratype --punctuation -p    # Enable capitalization & punctuation
 jeeratype --numbers -n        # Enable numeric digit tokens
 jeeratype -p -n               # Enable both punctuation and numbers
-jeeratype --quotes            # Practice structured English quotes
+jeeratype --quotes            # Practice English quotes
 
 # 💻 Code Mode
 jeeratype --mode code --lang python # Practice Python code snippets
 jeeratype --mode code --lang js     # Practice JavaScript code snippets
 jeeratype --mode code --lang go     # Practice Go code snippets
 
-# 🎯 Target Drills & Hardcore Modes
-jeeratype --mode adaptive     # Target passage targeting your weakest keys & bigrams
+# 🎯 Hardcore & Target Drills
 jeeratype --death -d          # Single typo immediately resets test session
-jeeratype --stop-on-error -soe# Forces error correction before advancing
-jeeratype --ghost 80 -g 80    # Set Target Ghost Pacer to 80 WPM
+jeeratype --wordlist /path/to/words.txt # Practice custom vocabulary list
 
 # 🎨 Customization & Theme Preview
 jeeratype theme list          # Display color swatches for all 18 themes
 jeeratype theme preview jewel # Render live UI preview for a specific theme
-jeeratype --theme jewel -t jewel # Options: jewel, sunset, forest, neon, vintage, mono, amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave, dracula, nord, solarized, catppuccin, gruvbox, matrix
+jeeratype --theme dracula     # Options: dracula, nord, solarized, catppuccin, gruvbox, jewel, sunset, forest, neon, vintage, mono, matrix, amber, cyberpunk, tokyonight, monokai, rose-pine, synthwave
 jeeratype --sound            # Enable terminal bell / audio click feedback
-jeeratype --showkeys -sk      # Enable live visual QWERTY keyboard overlay at bottom
 
-# 👤 Multi-User Profiles & Custom Word Lists
+# 👤 Multi-User Profiles & UNIX Pipelines
 jeeratype --profile Alex      # Scope test session & stats to a specific profile
-jeeratype --wordlist /path/to/mywords.txt # Practice custom vocabulary (≥50 words required)
-
-# 🏎️ Replays & UNIX Pipelines
-jeeratype export-replay       # Export last run timeline to JSON (e.g. replay_12345.json)
-jeeratype race replay.json    # Race live against a past recorded replay
 cat essay.txt | jeeratype     # Pipe text directly into JeeraType
-jeeratype /path/to/book.txt   # Read file with auto-resume progress offset
-jeeratype --csv               # Export raw test history to CSV format
-jeeratype --json              # Export raw test history to JSON format
+jeeratype /path/to/book.txt   # Read file with progress offset
 ```
 
 ---
 
-## License
+## 🎨 Themes & Customization
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
+JeeraType ships with **18 built-in color themes**:
+
+| Theme | Command | Description |
+| :--- | :--- | :--- |
+| **Dracula** | `jeeratype --theme dracula` | Dark violet & pastel accent theme |
+| **Nord** | `jeeratype --theme nord` | Arctic icy blue theme |
+| **Solarized** | `jeeratype --theme solarized` | Precision dark teal theme |
+| **Catppuccin** | `jeeratype --theme catppuccin` | Warm pastel theme |
+| **Gruvbox** | `jeeratype --theme gruvbox` | Retro groove earth-tone palette |
+| **Jewel** | `jeeratype --theme jewel` | Saturated emerald, sapphire, & ruby |
+| **Sunset** | `jeeratype --theme sunset` | Warm coral, tangerine, & plum |
+| **Forest** | `jeeratype --theme forest` | Muted moss green & bark brown |
+| **Neon** | `jeeratype --theme neon` | Electric cyan, hot pink, & acid green |
+| **Matrix** | `jeeratype --theme matrix` | Classic digital rain green on black |
+
+List all available themes and preview swatches:
+
+```bash
+jeeratype theme list
+jeeratype theme preview jewel
+```
+
+---
+
+## ☕ Support & Sponsor
+
+If you love **JeeraType**, please consider buying a coffee on Ko-fi to support open-source development!
+
+[![Ko-fi Sponsor](https://img.shields.io/badge/Sponsor%20on-Ko--fi-ff5e5b?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/srinjoypramanick)
+
+- ☕ **Ko-fi Page**: [ko-fi.com/srinjoypramanick](https://ko-fi.com/srinjoypramanick)
+- ⭐️ **Star the Repo**: Give [JeeraType a Star on GitHub](https://github.com/Codexia-afk/JeeraType) to help others discover it!
+
+---
+
+## 🗑️ Uninstalling
+
+### 🍎 macOS & 🐧 Linux
+```bash
+curl -sSL https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.sh | sh
+```
+
+### 🪟 Windows (PowerShell & Command Prompt)
+```powershell
+irm https://raw.githubusercontent.com/Codexia-afk/JeeraType/main/uninstall.ps1 | iex
+```
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
